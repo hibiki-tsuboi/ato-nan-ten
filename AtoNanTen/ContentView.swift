@@ -1,0 +1,99 @@
+//
+//  ContentView.swift
+//  AtoNanTen
+//
+//  Created by Hibiki Tsuboi on 2026/08/23.
+//
+
+import SwiftData
+import SwiftUI
+
+struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \ChildProfile.sortOrder) private var children: [ChildProfile]
+    @Query(sort: \RewardGoal.createdAt) private var goals: [RewardGoal]
+
+    var body: some View {
+        Group {
+            if children.isEmpty && goals.isEmpty {
+                SetupFlowView()
+            } else if children.isEmpty {
+                ProgressView("データを準備しています…")
+                    .task { migrateLegacyData() }
+            } else {
+                FamilyHomeView()
+            }
+        }
+        .preferredColorScheme(.light)
+    }
+
+    private func migrateLegacyData() {
+        guard children.isEmpty, !goals.isEmpty else { return }
+
+        let child = ChildProfile(name: "こども", avatarEmoji: "🧒")
+        modelContext.insert(child)
+        goals.filter { $0.childID == nil }.forEach { $0.childID = child.id }
+
+        if let tasks = try? modelContext.fetch(FetchDescriptor<TaskItem>()) {
+            tasks.filter { $0.childID == nil }.forEach { $0.childID = child.id }
+        }
+        if let requests = try? modelContext.fetch(FetchDescriptor<CompletionRequest>()) {
+            requests.filter { $0.childID == nil }.forEach { $0.childID = child.id }
+        }
+        if let histories = try? modelContext.fetch(FetchDescriptor<PointHistory>()) {
+            histories.filter { $0.childID == nil }.forEach { $0.childID = child.id }
+        }
+        if let redemptions = try? modelContext.fetch(FetchDescriptor<RewardRedemption>()) {
+            redemptions.filter { $0.childID == nil }.forEach { $0.childID = child.id }
+        }
+        try? modelContext.save()
+    }
+}
+
+private struct FamilyHomeView: View {
+    @Query(sort: \ChildProfile.sortOrder) private var children: [ChildProfile]
+    @Query(sort: \RewardGoal.createdAt) private var goals: [RewardGoal]
+    @AppStorage("selectedChildID") private var selectedChildID = ""
+
+    private var selectedChild: ChildProfile? {
+        children.first { $0.id.uuidString == selectedChildID } ?? children.first
+    }
+
+    var body: some View {
+        Group {
+            if let child = selectedChild,
+               let goal = goals.first(where: { $0.childID == child.id }) {
+                ChildHomeView(
+                    child: child,
+                    goal: goal,
+                    siblings: children,
+                    onSelectChild: { selectedChildID = $0.id.uuidString }
+                )
+                .id(child.id)
+                .task {
+                    if selectedChildID != child.id.uuidString {
+                        selectedChildID = child.id.uuidString
+                    }
+                }
+            } else {
+                ContentUnavailableView(
+                    "チャレンジがありません",
+                    systemImage: "person.crop.circle.badge.exclamationmark",
+                    description: Text("親モードから子どもの設定を確認してください。")
+                )
+            }
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+        .modelContainer(for: [
+            ChildProfile.self,
+            RewardGoal.self,
+            TaskItem.self,
+            CompletionRequest.self,
+            PointHistory.self,
+            RewardRedemption.self
+        ], inMemory: true)
+}
