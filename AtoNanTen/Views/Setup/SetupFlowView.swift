@@ -17,6 +17,7 @@ struct SetupFlowView: View {
     @State private var rewardEmoji = "🎮"
     @State private var targetPoints = 5
     @State private var presets = SetupTaskPreset.defaults
+    @FocusState private var focusedField: SetupField?
 
     private let rewardEmojis = ["🎮", "🍦", "🍭", "📺", "🧸", "🚲"]
     private let childAvatars = ["🧒", "👦", "👧", "🐶", "🐱", "🐰"]
@@ -36,16 +37,22 @@ struct SetupFlowView: View {
             VStack(spacing: 0) {
                 progressHeader
 
-                TabView(selection: $step) {
-                    rewardStep.tag(0)
-                    taskStep.tag(1)
-                    completionStep.tag(2)
+                Group {
+                    if step == 0 {
+                        rewardStep
+                    } else if step == 1 {
+                        taskStep
+                    } else {
+                        completionStep
+                    }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut, value: step)
             }
         }
         .tint(AppTheme.orange)
+        .onChange(of: step) {
+            focusedField = nil
+        }
     }
 
     private var progressHeader: some View {
@@ -78,6 +85,11 @@ struct SetupFlowView: View {
                     TextField("例：たろう", text: $childName)
                         .font(.title3.weight(.bold))
                         .textContentType(.name)
+                        .focused($focusedField, equals: .childName)
+                        .submitLabel(.next)
+                        .onSubmit {
+                            focusedField = .rewardTitle
+                        }
                         .padding()
                         .background(AppTheme.background, in: RoundedRectangle(cornerRadius: 16))
 
@@ -99,6 +111,11 @@ struct SetupFlowView: View {
 
                     TextField("ごほうびの名前", text: $rewardTitle)
                         .font(.title3.weight(.bold))
+                        .focused($focusedField, equals: .rewardTitle)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            focusedField = nil
+                        }
                         .padding()
                         .background(AppTheme.background, in: RoundedRectangle(cornerRadius: 16))
 
@@ -137,8 +154,10 @@ struct SetupFlowView: View {
             .padding(24)
         }
         .scrollIndicators(.hidden)
+        .scrollDismissesKeyboard(.interactively)
         .safeAreaInset(edge: .bottom) {
             Button("つぎへ") {
+                focusedField = nil
                 step = 1
             }
             .buttonStyle(BouncyButtonStyle())
@@ -308,6 +327,11 @@ struct SetupFlowView: View {
         if isAddingSibling {
             dismiss()
         }
+    }
+
+    private enum SetupField: Hashable {
+        case childName
+        case rewardTitle
     }
 }
 
