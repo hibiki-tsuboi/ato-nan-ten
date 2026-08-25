@@ -51,9 +51,14 @@ struct ContentView: View {
 }
 
 private struct FamilyHomeView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @Query(sort: \ChildProfile.sortOrder) private var children: [ChildProfile]
     @Query(sort: \RewardGoal.createdAt) private var goals: [RewardGoal]
+    @Query private var tasks: [TaskItem]
+    @Query private var requests: [CompletionRequest]
     @AppStorage("selectedChildID") private var selectedChildID = ""
+    @State private var currentDate = Date.now
 
     private var selectedChild: ChildProfile? {
         children.first { $0.id.uuidString == selectedChildID } ?? children.first
@@ -67,13 +72,23 @@ private struct FamilyHomeView: View {
                     child: child,
                     goal: goal,
                     siblings: children,
+                    date: currentDate,
                     onSelectChild: { selectedChildID = $0.id.uuidString }
                 )
-                .id(child.id)
+                .id(childViewID(for: child))
                 .task {
+                    prepareForToday()
                     if selectedChildID != child.id.uuidString {
                         selectedChildID = child.id.uuidString
                     }
+                }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        prepareForToday()
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+                    prepareForToday()
                 }
             } else {
                 ContentUnavailableView(
@@ -83,6 +98,23 @@ private struct FamilyHomeView: View {
                 )
             }
         }
+    }
+
+    private func childViewID(for child: ChildProfile) -> String {
+        let day = Calendar.current.startOfDay(for: currentDate).timeIntervalSinceReferenceDate
+        return "\(child.id.uuidString)-\(day)"
+    }
+
+    private func prepareForToday() {
+        let now = Date.now
+        try? DailyChallengeService.prepareForToday(
+            goals: goals,
+            tasks: tasks,
+            requests: requests,
+            in: modelContext,
+            date: now
+        )
+        currentDate = now
     }
 }
 

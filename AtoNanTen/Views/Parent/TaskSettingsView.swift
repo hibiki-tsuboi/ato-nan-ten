@@ -8,6 +8,7 @@ struct TaskSettingsView: View {
     @State private var showsNewTask = false
 
     let child: ChildProfile
+    let date: Date
 
     private var childTasks: [TaskItem] {
         tasks.filter { $0.childID == child.id }
@@ -17,39 +18,43 @@ struct TaskSettingsView: View {
         List {
             Section {
                 ForEach(childTasks) { task in
-                    Button {
-                        editingTask = task
-                    } label: {
-                        HStack(spacing: 12) {
-                            Text(task.emoji).font(.system(size: 30))
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(task.title)
+                    HStack(spacing: 12) {
+                        Button {
+                            editingTask = task
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(task.emoji).font(.system(size: 30))
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(task.title)
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                    Text(limitText(for: task))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text("+\(task.points)点")
                                     .font(.headline)
-                                    .foregroundStyle(.primary)
-                                Text(limitText(for: task))
+                                    .foregroundStyle(AppTheme.purple)
+                                Image(systemName: "chevron.right")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.tertiary)
                             }
-                            Spacer()
-                            Text("+\(task.points)点")
-                                .font(.headline)
-                                .foregroundStyle(AppTheme.purple)
-                            if !task.isEnabled {
-                                Image(systemName: "eye.slash.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
+                            .contentShape(Rectangle())
                         }
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+
+                        Toggle("今日表示", isOn: scheduledBinding(for: task))
+                            .labelsHidden()
+                            .accessibilityLabel("\(task.title)を今日の子ども画面に表示")
                     }
-                    .buttonStyle(.plain)
                 }
                 .onDelete(perform: deleteTasks)
                 .onMove(perform: moveTasks)
+            } header: {
+                Text("今日、子ども画面に表示する行動")
             } footer: {
-                Text("並べ替えるには右上の「編集」を押してください。削除後も過去の履歴は残ります。")
+                Text("スイッチをオンにした行動だけが今日の子ども画面に表示されます。登録済みの行動は翌日もここに残ります。")
             }
         }
         .navigationTitle("行動の設定")
@@ -68,14 +73,34 @@ struct TaskSettingsView: View {
         }
         .sheet(isPresented: $showsNewTask) {
             NavigationStack {
-                TaskEditorView(childID: child.id, task: nil, suggestedSortOrder: childTasks.count)
+                TaskEditorView(
+                    childID: child.id,
+                    task: nil,
+                    suggestedSortOrder: childTasks.count,
+                    date: date
+                )
             }
         }
         .sheet(item: $editingTask) { task in
             NavigationStack {
-                TaskEditorView(childID: child.id, task: task, suggestedSortOrder: task.sortOrder)
+                TaskEditorView(
+                    childID: child.id,
+                    task: task,
+                    suggestedSortOrder: task.sortOrder,
+                    date: date
+                )
             }
         }
+    }
+
+    private func scheduledBinding(for task: TaskItem) -> Binding<Bool> {
+        Binding(
+            get: { task.isScheduled(on: date) },
+            set: { isScheduled in
+                task.setScheduled(isScheduled, on: date)
+                try? modelContext.save()
+            }
+        )
     }
 
     private func limitText(for task: TaskItem) -> String {
@@ -107,24 +132,24 @@ private struct TaskEditorView: View {
     let childID: UUID
     let task: TaskItem?
     let suggestedSortOrder: Int
+    let date: Date
 
     @State private var title: String
     @State private var emoji: String
     @State private var points: Int
     @State private var dailyLimitValue: Int
-    @State private var isEnabled: Bool
 
     private let emojis = ["📚", "✏️", "📖", "🧹", "🏫", "📝", "🛁", "🧸"]
 
-    init(childID: UUID, task: TaskItem?, suggestedSortOrder: Int) {
+    init(childID: UUID, task: TaskItem?, suggestedSortOrder: Int, date: Date) {
         self.childID = childID
         self.task = task
         self.suggestedSortOrder = suggestedSortOrder
+        self.date = date
         _title = State(initialValue: task?.title ?? "")
         _emoji = State(initialValue: task?.emoji ?? "⭐️")
         _points = State(initialValue: task?.points ?? 1)
         _dailyLimitValue = State(initialValue: task?.dailyLimit ?? 0)
-        _isEnabled = State(initialValue: task?.isEnabled ?? true)
     }
 
     var body: some View {
@@ -164,10 +189,6 @@ private struct TaskEditorView: View {
                 .pickerStyle(.inline)
                 .labelsHidden()
             }
-
-            Section {
-                Toggle("子ども画面に表示", isOn: $isEnabled)
-            }
         }
         .navigationTitle(task == nil ? "行動を追加" : "行動を編集")
         .navigationBarTitleDisplayMode(.inline)
@@ -192,7 +213,6 @@ private struct TaskEditorView: View {
             task.emoji = emoji
             task.points = points
             task.dailyLimit = limit
-            task.isEnabled = isEnabled
         } else {
             modelContext.insert(TaskItem(
                 childID: childID,
@@ -200,8 +220,8 @@ private struct TaskEditorView: View {
                 emoji: emoji,
                 points: points,
                 dailyLimit: limit,
-                isEnabled: isEnabled,
-                sortOrder: suggestedSortOrder
+                sortOrder: suggestedSortOrder,
+                scheduledDate: date
             ))
         }
         try? modelContext.save()

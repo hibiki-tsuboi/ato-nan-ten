@@ -316,7 +316,8 @@ struct SetupFlowView: View {
                 emoji: preset.emoji,
                 points: preset.points,
                 dailyLimit: 1,
-                sortOrder: index
+                sortOrder: index,
+                scheduledDate: .now
             ))
         }
         try? modelContext.save()

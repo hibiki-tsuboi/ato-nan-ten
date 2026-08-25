@@ -5,6 +5,7 @@ struct RewardSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable var goal: RewardGoal
+    let date: Date
 
     @State private var title: String
     @State private var emoji: String
@@ -13,8 +14,9 @@ struct RewardSettingsView: View {
 
     private let emojis = ["🎮", "🍦", "🍭", "📺", "🧸", "🚲", "🎨", "🎡"]
 
-    init(goal: RewardGoal) {
+    init(goal: RewardGoal, date: Date) {
         self.goal = goal
+        self.date = date
         _title = State(initialValue: goal.title)
         _emoji = State(initialValue: goal.emoji)
         _targetPoints = State(initialValue: goal.targetPoints)
@@ -48,7 +50,11 @@ struct RewardSettingsView: View {
             } header: {
                 Text("目標ポイント")
             } footer: {
-                Text("現在は\(goal.currentPoints)点です。現在ポイント以下にすると、保存後すぐ達成になります。")
+                if goal.isConfigured(on: date) {
+                    Text("今日は\(goal.currentPoints)点です。現在ポイント以下にすると、保存後すぐ達成になります。")
+                } else {
+                    Text("保存すると、今日のチャレンジが0点から始まります。")
+                }
             }
         }
         .navigationTitle("ごほうびの設定")
@@ -56,7 +62,7 @@ struct RewardSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("保存") {
-                    if targetPoints <= goal.currentPoints {
+                    if goal.isConfigured(on: date), targetPoints <= goal.currentPoints {
                         showsTargetWarning = true
                     } else {
                         save()
@@ -75,9 +81,13 @@ struct RewardSettingsView: View {
     }
 
     private func save() {
+        if !goal.isConfigured(on: date) {
+            goal.currentPoints = 0
+        }
         goal.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         goal.emoji = emoji
         goal.targetPoints = targetPoints
+        goal.markConfigured(on: date)
         try? modelContext.save()
         dismiss()
     }

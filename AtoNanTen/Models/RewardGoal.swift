@@ -10,6 +10,7 @@ final class RewardGoal {
     var targetPoints: Int
     var currentPoints: Int
     var createdAt: Date
+    var configuredDate: Date?
 
     init(
         id: UUID = UUID(),
@@ -18,7 +19,8 @@ final class RewardGoal {
         emoji: String,
         targetPoints: Int,
         currentPoints: Int = 0,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        configuredDate: Date? = Date.now
     ) {
         self.id = id
         self.childID = childID
@@ -27,6 +29,7 @@ final class RewardGoal {
         self.targetPoints = targetPoints
         self.currentPoints = currentPoints
         self.createdAt = createdAt
+        self.configuredDate = configuredDate
     }
 
     var remainingPoints: Int {
@@ -35,5 +38,14 @@ final class RewardGoal {
 
     var isAchieved: Bool {
         currentPoints >= targetPoints
+    }
+
+    func isConfigured(on date: Date, calendar: Calendar = .current) -> Bool {
+        guard let configuredDate else { return false }
+        return calendar.isDate(configuredDate, inSameDayAs: date)
+    }
+
+    func markConfigured(on date: Date, calendar: Calendar = .current) {
+        configuredDate = calendar.startOfDay(for: date)
     }
 }

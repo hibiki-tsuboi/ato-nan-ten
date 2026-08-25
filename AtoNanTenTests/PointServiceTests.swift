@@ -110,6 +110,140 @@ struct PointServiceTests {
         #expect(redemptions.first?.earnedPoints == 6)
     }
 
+    @Test
+    func taskIsShownOnlyOnItsScheduledDay() {
+        let calendar = utcCalendar()
+        let today = Date(timeIntervalSince1970: 1_800_000_000)
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today)!
+        let task = TaskItem(
+            title: "くもん",
+            emoji: "✏️",
+            points: 2,
+            scheduledDate: today
+        )
+
+        #expect(task.isScheduled(on: today, calendar: calendar))
+        #expect(!task.isScheduled(on: tomorrow, calendar: calendar))
+    }
+
+    @Test
+    func newDayResetsPointsAndRejectsOldPendingRequests() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let yesterday = Date(timeIntervalSince1970: 1_800_000_000)
+        let today = calendar.date(byAdding: .day, value: 1, to: yesterday)!
+        let childID = UUID()
+        let goal = RewardGoal(
+            childID: childID,
+            title: "ゲーム",
+            emoji: "🎮",
+            targetPoints: 5,
+            currentPoints: 3,
+            configuredDate: yesterday
+        )
+        let request = CompletionRequest(
+            childID: childID,
+            taskID: UUID(),
+            taskTitle: "くもん",
+            taskEmoji: "✏️",
+            points: 2,
+            requestedAt: yesterday
+        )
+        context.insert(goal)
+        context.insert(request)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [goal],
+            tasks: [],
+            requests: [request],
+            in: context,
+            date: today,
+            calendar: calendar
+        )
+
+        #expect(goal.currentPoints == 0)
+        #expect(request.status == .rejected)
+        let histories = try context.fetch(FetchDescriptor<PointHistory>())
+        #expect(histories.isEmpty)
+    }
+
+    @Test
+    func preparingTheSameDayKeepsPointsAndPendingRequests() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let today = Date(timeIntervalSince1970: 1_800_000_000)
+        let goal = RewardGoal(
+            title: "アイス",
+            emoji: "🍦",
+            targetPoints: 5,
+            currentPoints: 2,
+            configuredDate: today
+        )
+        let request = CompletionRequest(
+            taskID: UUID(),
+            taskTitle: "読書",
+            taskEmoji: "📖",
+            points: 1,
+            requestedAt: today
+        )
+        context.insert(goal)
+        context.insert(request)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [goal],
+            tasks: [],
+            requests: [request],
+            in: context,
+            date: today,
+            calendar: calendar
+        )
+
+        #expect(goal.currentPoints == 2)
+        #expect(request.status == .pending)
+    }
+
+    @Test
+    func legacyDataIsAdoptedAsTodaysChallengeWithoutLosingPoints() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let today = Date(timeIntervalSince1970: 1_800_000_000)
+        let goal = RewardGoal(
+            title: "ゲーム",
+            emoji: "🎮",
+            targetPoints: 5,
+            currentPoints: 3,
+            configuredDate: nil
+        )
+        let visibleTask = TaskItem(title: "くもん", emoji: "✏️", points: 2)
+        let hiddenTask = TaskItem(title: "読書", emoji: "📖", points: 1, isEnabled: false)
+        context.insert(goal)
+        context.insert(visibleTask)
+        context.insert(hiddenTask)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [goal],
+            tasks: [visibleTask, hiddenTask],
+            requests: [],
+            in: context,
+            date: today,
+            calendar: calendar
+        )
+
+        #expect(goal.currentPoints == 3)
+        #expect(goal.isConfigured(on: today, calendar: calendar))
+        #expect(visibleTask.isScheduled(on: today, calendar: calendar))
+        #expect(!hiddenTask.isScheduled(on: today, calendar: calendar))
+    }
+
+    private func utcCalendar() -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }
+
     private func makeContainer() throws -> ModelContainer {
         let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
         return try ModelContainer(

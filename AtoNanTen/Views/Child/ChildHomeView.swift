@@ -9,6 +9,7 @@ struct ChildHomeView: View {
     let child: ChildProfile
     @Bindable var goal: RewardGoal
     let siblings: [ChildProfile]
+    let date: Date
     let onSelectChild: (ChildProfile) -> Void
     @State private var showsParentMode = false
     @State private var showsAchievement: Bool
@@ -19,21 +20,30 @@ struct ChildHomeView: View {
         child: ChildProfile,
         goal: RewardGoal,
         siblings: [ChildProfile],
+        date: Date,
         onSelectChild: @escaping (ChildProfile) -> Void
     ) {
         self.child = child
         self.goal = goal
         self.siblings = siblings
+        self.date = date
         self.onSelectChild = onSelectChild
-        _showsAchievement = State(initialValue: goal.isAchieved)
+        _showsAchievement = State(initialValue: goal.isConfigured(on: date) && goal.isAchieved)
     }
 
-    private var enabledTasks: [TaskItem] {
-        tasks.filter { $0.childID == child.id && $0.isEnabled }
+    private var todayTasks: [TaskItem] {
+        tasks.filter { $0.childID == child.id && $0.isScheduled(on: date) }
     }
 
     private var childRequests: [CompletionRequest] {
-        requests.filter { $0.childID == child.id }
+        requests.filter {
+            $0.childID == child.id &&
+                Calendar.current.isDate($0.requestedAt, inSameDayAs: date)
+        }
+    }
+
+    private var isConfiguredToday: Bool {
+        goal.isConfigured(on: date)
     }
 
     private var pendingCount: Int {
@@ -48,22 +58,31 @@ struct ChildHomeView: View {
                 VStack(spacing: 18) {
                     header
                     childSwitcher
-                    progressCard
 
-                    if pendingCount > 0 {
-                        pendingBanner
-                    }
+                    if isConfiguredToday {
+                        progressCard
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("きょうも がんばろう！")
-                            .font(.title3.weight(.heavy))
-                            .foregroundStyle(AppTheme.ink)
+                        if pendingCount > 0 {
+                            pendingBanner
+                        }
 
-                        ForEach(enabledTasks) { task in
-                            TaskCardView(task: task, availability: availability(for: task)) {
-                                requestCompletion(for: task)
+                        if todayTasks.isEmpty {
+                            noTasksCard
+                        } else {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("きょうも がんばろう！")
+                                    .font(.title3.weight(.heavy))
+                                    .foregroundStyle(AppTheme.ink)
+
+                                ForEach(todayTasks) { task in
+                                    TaskCardView(task: task, availability: availability(for: task)) {
+                                        requestCompletion(for: task)
+                                    }
+                                }
                             }
                         }
+                    } else {
+                        setupPendingCard
                     }
                 }
                 .padding(.horizontal, 18)
@@ -73,7 +92,7 @@ struct ChildHomeView: View {
         }
         .tint(AppTheme.orange)
         .fullScreenCover(isPresented: $showsParentMode) {
-            ParentHomeView(child: child, goal: goal)
+            ParentHomeView(child: child, goal: goal, date: date)
         }
         .fullScreenCover(isPresented: $showsAchievement) {
             RewardAchievedView(goal: goal)
@@ -87,7 +106,7 @@ struct ChildHomeView: View {
             Text(authenticationMessage ?? "もう一度お試しください。")
         }
         .onChange(of: goal.currentPoints) { _, _ in
-            if goal.isAchieved {
+            if isConfiguredToday && goal.isAchieved {
                 showsAchievement = true
             }
         }
@@ -220,6 +239,39 @@ struct ChildHomeView: View {
         }
         .padding(14)
         .background(AppTheme.yellow.opacity(0.28), in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var setupPendingCard: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "calendar.badge.clock")
+                .font(.system(size: 42))
+                .foregroundStyle(AppTheme.purple)
+            Text("きょうのチャレンジを準備中")
+                .font(.title3.weight(.heavy))
+                .foregroundStyle(AppTheme.ink)
+            Text("おうちの人が今日のごほうびと行動を設定すると、ここに表示されるよ。")
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .appCard()
+    }
+
+    private var noTasksCard: some View {
+        VStack(spacing: 10) {
+            Text("☀️")
+                .font(.system(size: 40))
+            Text("きょうの行動はまだないよ")
+                .font(.headline)
+                .foregroundStyle(AppTheme.ink)
+            Text("おうちの人が選んだ行動だけ、ここに表示されます。")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .appCard()
     }
 
     private func availability(for task: TaskItem) -> CompletionAvailability {

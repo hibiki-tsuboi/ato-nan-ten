@@ -6,9 +6,14 @@ struct ParentHomeView: View {
     @Query(sort: \CompletionRequest.requestedAt, order: .reverse) private var requests: [CompletionRequest]
     let child: ChildProfile
     @Bindable var goal: RewardGoal
+    let date: Date
 
     private var pendingCount: Int {
-        requests.filter { $0.childID == child.id && $0.status == .pending }.count
+        requests.filter {
+            $0.childID == child.id &&
+                $0.status == .pending &&
+                Calendar.current.isDate($0.requestedAt, inSameDayAs: date)
+        }.count
     }
 
     var body: some View {
@@ -22,7 +27,7 @@ struct ParentHomeView: View {
 
                         if pendingCount > 0 {
                             NavigationLink {
-                                ApprovalListView(child: child, goal: goal)
+                                ApprovalListView(child: child, goal: goal, date: date)
                             } label: {
                                 HStack(spacing: 15) {
                                     Image(systemName: "bell.badge.fill")
@@ -54,41 +59,43 @@ struct ParentHomeView: View {
                                 systemName: "checkmark.seal.fill",
                                 color: AppTheme.orange
                             ) {
-                                ApprovalListView(child: child, goal: goal)
+                                ApprovalListView(child: child, goal: goal, date: date)
                             }
 
                             Divider().padding(.leading, 66)
 
                             ParentMenuLink(
-                                title: "行動を設定",
-                                subtitle: "追加・編集・回数制限",
+                                title: "今日の行動を設定",
+                                subtitle: "表示する行動を選択・追加",
                                 systemName: "list.bullet.clipboard.fill",
                                 color: AppTheme.mint
                             ) {
-                                TaskSettingsView(child: child)
+                                TaskSettingsView(child: child, date: date)
                             }
 
                             Divider().padding(.leading, 66)
 
                             ParentMenuLink(
-                                title: "ごほうびを設定",
-                                subtitle: "内容・目標ポイント",
+                                title: "今日のごほうびを設定",
+                                subtitle: goal.isConfigured(on: date) ? "内容・目標ポイント" : "今日の目標は未設定",
                                 systemName: "gift.fill",
                                 color: AppTheme.purple
                             ) {
-                                RewardSettingsView(goal: goal)
+                                RewardSettingsView(goal: goal, date: date)
                             }
 
                             Divider().padding(.leading, 66)
 
                             ParentMenuLink(
                                 title: "ポイントを修正",
-                                subtitle: "増減を履歴に記録",
+                                subtitle: goal.isConfigured(on: date) ? "増減を履歴に記録" : "今日の目標を先に設定してください",
                                 systemName: "plusminus.circle.fill",
                                 color: .blue
                             ) {
                                 PointAdjustmentView(goal: goal)
                             }
+                            .disabled(!goal.isConfigured(on: date))
+                            .opacity(goal.isConfigured(on: date) ? 1 : 0.55)
 
                             Divider().padding(.leading, 66)
 
@@ -133,28 +140,38 @@ struct ParentHomeView: View {
             Text("\(child.avatarEmoji) \(child.name)")
                 .font(.title3.weight(.heavy))
                 .foregroundStyle(AppTheme.ink)
-            HStack {
-                Text("現在のチャレンジ")
-                    .font(.headline)
-                Spacer()
-                Text("\(goal.currentPoints) / \(goal.targetPoints)点")
-                    .font(.title3.weight(.heavy))
-                    .foregroundStyle(AppTheme.purple)
-            }
-
-            ProgressView(value: min(Double(goal.currentPoints) / Double(max(goal.targetPoints, 1)), 1))
-                .tint(AppTheme.orange)
-
-            HStack(spacing: 12) {
-                Text(goal.emoji).font(.system(size: 36))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("ごほうび")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(goal.title)
+            if goal.isConfigured(on: date) {
+                HStack {
+                    Text("今日のチャレンジ")
                         .font(.headline)
-                        .foregroundStyle(AppTheme.ink)
+                    Spacer()
+                    Text("\(goal.currentPoints) / \(goal.targetPoints)点")
+                        .font(.title3.weight(.heavy))
+                        .foregroundStyle(AppTheme.purple)
                 }
+
+                ProgressView(value: min(Double(goal.currentPoints) / Double(max(goal.targetPoints, 1)), 1))
+                    .tint(AppTheme.orange)
+
+                HStack(spacing: 12) {
+                    Text(goal.emoji).font(.system(size: 36))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("ごほうび")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(goal.title)
+                            .font(.headline)
+                            .foregroundStyle(AppTheme.ink)
+                    }
+                }
+            } else {
+                Label("今日のチャレンジは未設定です", systemImage: "calendar.badge.exclamationmark")
+                    .font(.headline)
+                    .foregroundStyle(AppTheme.orange)
+
+                Text("ごほうびと目標ポイントを設定すると、子ども画面に今日のチャレンジが表示されます。")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
         }
         .appCard()

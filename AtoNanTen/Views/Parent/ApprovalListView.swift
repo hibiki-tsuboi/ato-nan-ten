@@ -6,9 +6,14 @@ struct ApprovalListView: View {
     @Query(sort: \CompletionRequest.requestedAt, order: .reverse) private var requests: [CompletionRequest]
     let child: ChildProfile
     @Bindable var goal: RewardGoal
+    let date: Date
 
     private var pendingRequests: [CompletionRequest] {
-        requests.filter { $0.childID == child.id && $0.status == .pending }
+        requests.filter {
+            $0.childID == child.id &&
+                $0.status == .pending &&
+                Calendar.current.isDate($0.requestedAt, inSameDayAs: date)
+        }
     }
 
     var body: some View {
