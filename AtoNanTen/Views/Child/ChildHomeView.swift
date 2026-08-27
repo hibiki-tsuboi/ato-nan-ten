@@ -15,6 +15,8 @@ struct ChildHomeView: View {
     @State private var queuedScreen: ChildModalScreen?
     @State private var isAuthenticating = false
     @State private var authenticationMessage: String?
+    @State private var showsParentModeHint = false
+    @AppStorage("hasSeenParentModeHint") private var hasSeenParentModeHint = false
 
     init(
         child: ChildProfile,
@@ -29,7 +31,8 @@ struct ChildHomeView: View {
         self.date = date
         self.onSelectChild = onSelectChild
         let isAchievedToday = goal.isConfigured(on: date) && goal.isAchieved
-        _presentedScreen = State(initialValue: isAchievedToday ? .achievement : nil)
+        let isPostponed = AchievementDeferralStore.isPostponed(goalID: goal.id, on: date)
+        _presentedScreen = State(initialValue: isAchievedToday && !isPostponed ? .achievement : nil)
     }
 
     private var todayTasks: [TaskItem] {
@@ -46,6 +49,14 @@ struct ChildHomeView: View {
         goal.isConfigured(on: date)
     }
 
+    private var isAchievementPostponed: Bool {
+        AchievementDeferralStore.isPostponed(goalID: goal.id, on: date)
+    }
+
+    private var isParentModeHintVisible: Bool {
+        showsParentModeHint || !hasSeenParentModeHint
+    }
+
     private var pendingCount: Int {
         childRequests.filter { $0.status == .pending }.count
     }
@@ -58,12 +69,20 @@ struct ChildHomeView: View {
                 VStack(spacing: 18) {
                     header
 
+                    if isParentModeHintVisible {
+                        parentModeHint
+                    }
+
                     if siblings.count > 1 {
                         childSwitcher
                     }
 
                     if isConfiguredToday {
                         progressCard
+
+                        if goal.isAchieved {
+                            pendingRewardCard
+                        }
 
                         if pendingCount > 0 {
                             pendingBanner
@@ -90,6 +109,7 @@ struct ChildHomeView: View {
                 }
                 .padding(.horizontal, 18)
                 .padding(.bottom, 30)
+                .appContentWidth()
             }
             .scrollIndicators(.hidden)
         }
@@ -99,7 +119,9 @@ struct ChildHomeView: View {
             case .parentMode:
                 ParentHomeView(child: child, goal: goal, date: date)
             case .achievement:
-                RewardAchievedView(goal: goal)
+                RewardAchievedView(goal: goal) {
+                    AchievementDeferralStore.postpone(goalID: goal.id, on: date)
+                }
             case .passcodeSetup:
                 ParentPasscodeView(mode: .register) { present(.parentMode) }
             case .passcodeUnlock:
@@ -115,7 +137,11 @@ struct ChildHomeView: View {
             Text(authenticationMessage ?? "もう一度お試しください。")
         }
         .onChange(of: goal.isAchieved) { _, isAchieved in
-            if isAchieved && isConfiguredToday {
+            guard isAchieved else {
+                AchievementDeferralStore.clear(goalID: goal.id)
+                return
+            }
+            if isConfiguredToday, !isAchievementPostponed {
                 present(.achievement)
             }
         }
@@ -150,12 +176,75 @@ struct ChildHomeView: View {
             .onLongPressGesture(minimumDuration: 1) {
                 openParentMode()
             }
+            .onTapGesture {
+                showsParentModeHint = true
+            }
             .accessibilityLabel("親モード")
             .accessibilityHint("1秒長押しして認証します")
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { openParentMode() }
         }
         .padding(.top, 8)
+    }
+
+    private var parentModeHint: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "person.badge.key.fill")
+                .font(.title3)
+                .foregroundStyle(AppTheme.purple)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("おうちの人へ")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+                Text("右上のボタンを1秒長押しすると、設定を開けます。")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(AppTheme.ink)
+            }
+
+            Spacer(minLength: 8)
+
+            Button {
+                showsParentModeHint = false
+                hasSeenParentModeHint = true
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("ヒントを閉じる")
+        }
+        .padding(14)
+        .background(.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var pendingRewardCard: some View {
+        Button {
+            present(.achievement)
+        } label: {
+            HStack(spacing: 13) {
+                Text("🎁")
+                    .font(.system(size: 34))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("ごほうび、まだもらってないよ")
+                        .font(.subheadline.weight(.heavy))
+                        .foregroundStyle(AppTheme.ink)
+                    Text(goal.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(AppTheme.mint)
+            }
+            .padding(14)
+            .background(AppTheme.mint.opacity(0.22), in: RoundedRectangle(cornerRadius: 18))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var childSwitcher: some View {

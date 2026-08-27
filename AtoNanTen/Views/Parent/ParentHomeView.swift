@@ -120,6 +120,7 @@ struct ParentHomeView: View {
                         .background(.background, in: RoundedRectangle(cornerRadius: 20))
                     }
                     .padding(18)
+                    .appContentWidth()
                 }
             }
             .navigationTitle("親モード")

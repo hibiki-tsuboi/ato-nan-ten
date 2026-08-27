@@ -78,6 +78,7 @@ struct SetupFlowView: View {
         }
         .padding(.horizontal, 24)
         .padding(.top, 12)
+        .appContentWidth()
     }
 
     private var rewardStep: some View {
@@ -164,6 +165,7 @@ struct SetupFlowView: View {
                 .appCard()
             }
             .padding(24)
+            .appContentWidth()
         }
         .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
@@ -177,6 +179,7 @@ struct SetupFlowView: View {
                 childName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
                     rewardTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             )
+            .appContentWidth()
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
             .background(.ultraThinMaterial)
@@ -226,6 +229,7 @@ struct SetupFlowView: View {
                 }
             }
             .padding(24)
+            .appContentWidth()
         }
         .scrollIndicators(.hidden)
     }
@@ -259,6 +263,18 @@ struct SetupFlowView: View {
                 .frame(maxWidth: .infinity)
                 .appCard()
 
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "person.badge.key.fill")
+                        .font(.headline)
+                        .foregroundStyle(AppTheme.purple)
+                    Text("設定を変えるときは、子ども画面の右上のボタンを1秒長押ししてください。")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 16))
+
                 HStack(spacing: 12) {
                     Button("もどる") { step = 1 }
                         .buttonStyle(BouncyButtonStyle(color: AppTheme.purple.opacity(0.72)))
@@ -267,6 +283,7 @@ struct SetupFlowView: View {
                 }
             }
             .padding(24)
+            .appContentWidth()
         }
         .scrollIndicators(.hidden)
     }

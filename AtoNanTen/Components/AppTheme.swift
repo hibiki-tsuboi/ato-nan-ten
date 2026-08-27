@@ -28,6 +28,12 @@ extension View {
     func appCard() -> some View {
         modifier(CardStyle())
     }
+
+    /// iPadなどの広い画面で横に間延びしないよう、内容の幅を制限して中央に寄せる
+    func appContentWidth(_ maxWidth: CGFloat = 560) -> some View {
+        frame(maxWidth: maxWidth)
+            .frame(maxWidth: .infinity)
+    }
 }
 
 struct BouncyButtonStyle: ButtonStyle {

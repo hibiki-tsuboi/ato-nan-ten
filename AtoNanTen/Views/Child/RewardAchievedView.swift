@@ -7,6 +7,8 @@ struct RewardAchievedView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @Bindable var goal: RewardGoal
+    let onPostpone: () -> Void
+
     @State private var animate = false
 
     var body: some View {
@@ -58,9 +60,18 @@ struct RewardAchievedView: View {
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
+
+                    Button("あとでもらう") {
+                        onPostpone()
+                        dismiss()
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.white.opacity(0.92))
+                    .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .padding(28)
                 .padding(.top, 26)
+                .appContentWidth()
             }
             .scrollIndicators(.hidden)
         }
