@@ -12,7 +12,7 @@ struct ParentHomeView: View {
         requests.filter {
             $0.childID == child.id &&
                 $0.status == .pending &&
-                Calendar.current.isDate($0.requestedAt, inSameDayAs: date)
+                AppDay.isSameDay($0.requestedAt, date)
         }.count
     }
 

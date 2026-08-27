@@ -42,10 +42,10 @@ final class RewardGoal {
 
     func isConfigured(on date: Date, calendar: Calendar = .current) -> Bool {
         guard let configuredDate else { return false }
-        return calendar.isDate(configuredDate, inSameDayAs: date)
+        return AppDay.isSameDay(configuredDate, date, calendar: calendar)
     }
 
     func markConfigured(on date: Date, calendar: Calendar = .current) {
-        configuredDate = calendar.startOfDay(for: date)
+        configuredDate = AppDay.start(of: date, calendar: calendar)
     }
 }

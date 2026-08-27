@@ -12,20 +12,14 @@ struct PointProgressView: View {
     var body: some View {
         VStack(spacing: 12) {
             if targetPoints <= 10 {
-                HStack(spacing: 6) {
-                    ForEach(0..<targetPoints, id: \.self) { index in
-                        Image(systemName: index < currentPoints ? "star.fill" : "star")
-                            .font(.system(size: 25, weight: .bold))
-                            .foregroundStyle(index < currentPoints ? AppTheme.yellow : AppTheme.orange.opacity(0.35))
-                            .symbolEffect(.bounce, value: currentPoints)
-                    }
+                ViewThatFits(in: .horizontal) {
+                    starRow(size: 25, spacing: 6)
+                    starRow(size: 20, spacing: 5)
+                    starRow(size: 16, spacing: 4)
+                    progressBar
                 }
-                .accessibilityHidden(true)
             } else {
-                ProgressView(value: progress)
-                    .tint(AppTheme.yellow)
-                    .scaleEffect(y: 2.2)
-                    .padding(.vertical, 7)
+                progressBar
             }
 
             Text("\(currentPoints) / \(targetPoints) てん")
@@ -34,5 +28,24 @@ struct PointProgressView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(targetPoints)点中\(currentPoints)点")
+    }
+
+    private func starRow(size: CGFloat, spacing: CGFloat) -> some View {
+        HStack(spacing: spacing) {
+            ForEach(0..<targetPoints, id: \.self) { index in
+                Image(systemName: index < currentPoints ? "star.fill" : "star")
+                    .font(.system(size: size, weight: .bold))
+                    .foregroundStyle(index < currentPoints ? AppTheme.yellow : AppTheme.orange.opacity(0.35))
+                    .symbolEffect(.bounce, value: currentPoints)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private var progressBar: some View {
+        ProgressView(value: progress)
+            .tint(AppTheme.yellow)
+            .scaleEffect(y: 2.2)
+            .padding(.vertical, 7)
     }
 }

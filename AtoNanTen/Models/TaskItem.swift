@@ -37,11 +37,11 @@ final class TaskItem {
 
     func isScheduled(on date: Date, calendar: Calendar = .current) -> Bool {
         guard let scheduledDate else { return false }
-        return calendar.isDate(scheduledDate, inSameDayAs: date)
+        return AppDay.isSameDay(scheduledDate, date, calendar: calendar)
     }
 
     func setScheduled(_ isScheduled: Bool, on date: Date, calendar: Calendar = .current) {
-        scheduledDate = isScheduled ? calendar.startOfDay(for: date) : nil
+        scheduledDate = isScheduled ? AppDay.start(of: date, calendar: calendar) : nil
         isEnabled = isScheduled
     }
 }

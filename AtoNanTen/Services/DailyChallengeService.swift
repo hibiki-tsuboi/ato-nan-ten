@@ -30,7 +30,7 @@ enum DailyChallengeService {
         }
 
         for request in requests where request.status == .pending {
-            guard !calendar.isDate(request.requestedAt, inSameDayAs: date) else { continue }
+            guard !AppDay.isSameDay(request.requestedAt, date, calendar: calendar) else { continue }
             request.status = .rejected
             hasChanges = true
         }

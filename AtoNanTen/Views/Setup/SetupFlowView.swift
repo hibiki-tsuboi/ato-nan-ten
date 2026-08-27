@@ -56,16 +56,28 @@ struct SetupFlowView: View {
     }
 
     private var progressHeader: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<3, id: \.self) { index in
-                Capsule()
-                    .fill(index <= step ? AppTheme.orange : .white.opacity(0.8))
-                    .frame(height: 7)
+        VStack(spacing: 10) {
+            if isAddingSibling {
+                HStack {
+                    Spacer()
+                    Button("キャンセル") { dismiss() }
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(AppTheme.purple)
+                        .frame(minHeight: 44)
+                }
             }
+
+            HStack(spacing: 8) {
+                ForEach(0..<3, id: \.self) { index in
+                    Capsule()
+                        .fill(index <= step ? AppTheme.orange : .white.opacity(0.8))
+                        .frame(height: 7)
+                }
+            }
+            .accessibilityLabel("セットアップ ステップ \(step + 1) / 3")
         }
         .padding(.horizontal, 24)
         .padding(.top, 12)
-        .accessibilityLabel("セットアップ ステップ \(step + 1) / 3")
     }
 
     private var rewardStep: some View {

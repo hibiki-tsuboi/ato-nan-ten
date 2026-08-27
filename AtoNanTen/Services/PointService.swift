@@ -17,7 +17,7 @@ enum PointService {
     ) -> CompletionAvailability {
         let relevantRequests = requests.filter {
             $0.taskID == task.id &&
-                calendar.isDate($0.requestedAt, inSameDayAs: date) &&
+                AppDay.isSameDay($0.requestedAt, date, calendar: calendar) &&
                 $0.status != .rejected
         }
 

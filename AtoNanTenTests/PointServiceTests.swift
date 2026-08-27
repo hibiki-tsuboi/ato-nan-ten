@@ -239,6 +239,100 @@ struct PointServiceTests {
     }
 
     @Test
+    func lateNightStaysOnTheSameChallengeDay() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let day = Date(timeIntervalSince1970: 1_800_000_000)
+        let lateNight = day.addingTimeInterval(15.5 * 3600)
+        let afterMidnight = day.addingTimeInterval(17 * 3600)
+        let goal = RewardGoal(title: "ゲーム", emoji: "🎮", targetPoints: 5, currentPoints: 3)
+        goal.markConfigured(on: day, calendar: calendar)
+        let request = CompletionRequest(
+            taskID: UUID(),
+            taskTitle: "くもん",
+            taskEmoji: "✏️",
+            points: 2,
+            requestedAt: lateNight
+        )
+        context.insert(goal)
+        context.insert(request)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [goal],
+            tasks: [],
+            requests: [request],
+            in: context,
+            date: afterMidnight,
+            calendar: calendar
+        )
+
+        #expect(goal.currentPoints == 3)
+        #expect(goal.isConfigured(on: afterMidnight, calendar: calendar))
+        #expect(request.status == .pending)
+    }
+
+    @Test
+    func challengeDayRollsOverAtFourInTheMorning() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let day = Date(timeIntervalSince1970: 1_800_000_000)
+        let lateNight = day.addingTimeInterval(15.5 * 3600)
+        let earlyMorning = day.addingTimeInterval(20.5 * 3600)
+        let goal = RewardGoal(title: "ゲーム", emoji: "🎮", targetPoints: 5, currentPoints: 3)
+        goal.markConfigured(on: day, calendar: calendar)
+        let request = CompletionRequest(
+            taskID: UUID(),
+            taskTitle: "くもん",
+            taskEmoji: "✏️",
+            points: 2,
+            requestedAt: lateNight
+        )
+        context.insert(goal)
+        context.insert(request)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [goal],
+            tasks: [],
+            requests: [request],
+            in: context,
+            date: earlyMorning,
+            calendar: calendar
+        )
+
+        #expect(goal.currentPoints == 0)
+        #expect(goal.isConfigured(on: earlyMorning, calendar: calendar))
+        #expect(request.status == .rejected)
+    }
+
+    @Test
+    func approvedTaskStaysDoneAfterMidnight() {
+        let calendar = utcCalendar()
+        let day = Date(timeIntervalSince1970: 1_800_000_000)
+        let lateNight = day.addingTimeInterval(15.5 * 3600)
+        let afterMidnight = day.addingTimeInterval(17 * 3600)
+        let task = TaskItem(title: "宿題", emoji: "📚", points: 1, dailyLimit: 1)
+        let request = CompletionRequest(
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points,
+            requestedAt: lateNight,
+            status: .approved
+        )
+
+        #expect(
+            PointService.availability(
+                for: task,
+                requests: [request],
+                on: afterMidnight,
+                calendar: calendar
+            ) == .limitReached
+        )
+    }
+
+    @Test
     func rewardCarriesOverToTheNextDayWithPointsReset() throws {
         let container = try makeContainer()
         let context = container.mainContext

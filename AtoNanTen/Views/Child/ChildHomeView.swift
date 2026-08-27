@@ -11,8 +11,8 @@ struct ChildHomeView: View {
     let siblings: [ChildProfile]
     let date: Date
     let onSelectChild: (ChildProfile) -> Void
-    @State private var showsParentMode = false
-    @State private var showsAchievement: Bool
+    @State private var presentedScreen: ChildModalScreen?
+    @State private var queuedScreen: ChildModalScreen?
     @State private var isAuthenticating = false
     @State private var authenticationMessage: String?
 
@@ -28,7 +28,8 @@ struct ChildHomeView: View {
         self.siblings = siblings
         self.date = date
         self.onSelectChild = onSelectChild
-        _showsAchievement = State(initialValue: goal.isConfigured(on: date) && goal.isAchieved)
+        let isAchievedToday = goal.isConfigured(on: date) && goal.isAchieved
+        _presentedScreen = State(initialValue: isAchievedToday ? .achievement : nil)
     }
 
     private var todayTasks: [TaskItem] {
@@ -37,8 +38,7 @@ struct ChildHomeView: View {
 
     private var childRequests: [CompletionRequest] {
         requests.filter {
-            $0.childID == child.id &&
-                Calendar.current.isDate($0.requestedAt, inSameDayAs: date)
+            $0.childID == child.id && AppDay.isSameDay($0.requestedAt, date)
         }
     }
 
@@ -91,11 +91,17 @@ struct ChildHomeView: View {
             .scrollIndicators(.hidden)
         }
         .tint(AppTheme.orange)
-        .fullScreenCover(isPresented: $showsParentMode) {
-            ParentHomeView(child: child, goal: goal, date: date)
-        }
-        .fullScreenCover(isPresented: $showsAchievement) {
-            RewardAchievedView(goal: goal)
+        .fullScreenCover(item: $presentedScreen, onDismiss: presentQueuedScreen) { screen in
+            switch screen {
+            case .parentMode:
+                ParentHomeView(child: child, goal: goal, date: date)
+            case .achievement:
+                RewardAchievedView(goal: goal)
+            case .passcodeSetup:
+                ParentPasscodeView(mode: .register) { present(.parentMode) }
+            case .passcodeUnlock:
+                ParentPasscodeView(mode: .unlock) { present(.parentMode) }
+            }
         }
         .alert("親モードを開けませんでした", isPresented: Binding(
             get: { authenticationMessage != nil },
@@ -105,9 +111,9 @@ struct ChildHomeView: View {
         } message: {
             Text(authenticationMessage ?? "もう一度お試しください。")
         }
-        .onChange(of: goal.currentPoints) { _, _ in
-            if isConfiguredToday && goal.isAchieved {
-                showsAchievement = true
+        .onChange(of: goal.isAchieved) { _, isAchieved in
+            if isAchieved && isConfiguredToday {
+                present(.achievement)
             }
         }
     }
@@ -275,7 +281,7 @@ struct ChildHomeView: View {
     }
 
     private func availability(for task: TaskItem) -> CompletionAvailability {
-        PointService.availability(for: task, requests: childRequests)
+        PointService.availability(for: task, requests: childRequests, on: date)
     }
 
     private func requestCompletion(for task: TaskItem) {
@@ -284,18 +290,46 @@ struct ChildHomeView: View {
     }
 
     private func openParentMode() {
-        guard !isAuthenticating else { return }
+        guard !isAuthenticating, presentedScreen == nil else { return }
         isAuthenticating = true
 
         Task {
-            do {
-                if try await ParentAuthenticationService.authenticate() {
-                    showsParentMode = true
-                }
-            } catch {
-                authenticationMessage = "Face IDまたは端末のパスコードを確認してください。"
+            switch await ParentAuthenticationService.authenticate() {
+            case .authenticated:
+                present(.parentMode)
+            case .cancelled:
+                break
+            case .passcodeRequired:
+                present(ParentPasscodeStore.isRegistered ? .passcodeUnlock : .passcodeSetup)
+            case .failed(let message):
+                authenticationMessage = message
             }
             isAuthenticating = false
         }
     }
+
+    private func present(_ screen: ChildModalScreen) {
+        guard presentedScreen != screen else { return }
+
+        if presentedScreen == nil {
+            presentedScreen = screen
+        } else {
+            queuedScreen = screen
+        }
+    }
+
+    private func presentQueuedScreen() {
+        guard let queuedScreen else { return }
+        self.queuedScreen = nil
+        presentedScreen = queuedScreen
+    }
+}
+
+private enum ChildModalScreen: Int, Identifiable {
+    case parentMode
+    case achievement
+    case passcodeSetup
+    case passcodeUnlock
+
+    var id: Int { rawValue }
 }

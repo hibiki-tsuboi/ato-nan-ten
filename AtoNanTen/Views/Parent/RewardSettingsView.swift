@@ -50,7 +50,7 @@ struct RewardSettingsView: View {
             } header: {
                 Text("目標ポイント")
             } footer: {
-                Text("今日は\(goal.currentPoints)点です。現在ポイント以下にすると、保存後すぐ達成になります。\nごほうびと目標ポイントは翌日以降も引き継がれ、ポイントだけ毎日0点にもどります。")
+                Text("今日は\(goal.currentPoints)点です。現在ポイント以下にすると、保存後すぐ達成になります。\nごほうびと目標ポイントは翌日以降も引き継がれ、ポイントだけ毎朝4時に0点へリセットされます。")
             }
         }
         .navigationTitle("ごほうびの設定")

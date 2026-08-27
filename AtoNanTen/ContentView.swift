@@ -101,7 +101,7 @@ private struct FamilyHomeView: View {
     }
 
     private func childViewID(for child: ChildProfile) -> String {
-        let day = Calendar.current.startOfDay(for: currentDate).timeIntervalSinceReferenceDate
+        let day = AppDay.start(of: currentDate).timeIntervalSinceReferenceDate
         return "\(child.id.uuidString)-\(day)"
     }
 

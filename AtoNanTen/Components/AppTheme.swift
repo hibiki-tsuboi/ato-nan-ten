@@ -34,14 +34,26 @@ struct BouncyButtonStyle: ButtonStyle {
     var color: Color = AppTheme.orange
 
     func makeBody(configuration: Configuration) -> some View {
+        BouncyButtonLabel(configuration: configuration, color: color)
+    }
+}
+
+private struct BouncyButtonLabel: View {
+    @Environment(\.isEnabled) private var isEnabled
+
+    let configuration: ButtonStyleConfiguration
+    let color: Color
+
+    var body: some View {
         configuration.label
             .font(.headline)
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
             .background(color.gradient, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .saturation(isEnabled ? 1 : 0)
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
-            .opacity(configuration.isPressed ? 0.88 : 1)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.88 : 1) : 0.5)
             .animation(.spring(response: 0.25), value: configuration.isPressed)
     }
 }

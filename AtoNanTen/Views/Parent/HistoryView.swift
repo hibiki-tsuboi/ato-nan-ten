@@ -16,7 +16,7 @@ struct HistoryView: View {
 
     private var groupedHistories: [(date: Date, entries: [PointHistory])] {
         let grouped = Dictionary(grouping: childHistories) {
-            Calendar.current.startOfDay(for: $0.createdAt)
+            AppDay.start(of: $0.createdAt)
         }
         return grouped
             .map { (date: $0.key, entries: $0.value) }
