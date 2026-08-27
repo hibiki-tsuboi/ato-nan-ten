@@ -31,7 +31,10 @@ struct ContentView: View {
                 FamilyHomeView()
             }
         }
-        .preferredColorScheme(colorSchemeOption.colorScheme)
+        .onAppear { AppearanceController.apply(colorSchemeOption) }
+        .onChange(of: colorSchemeOption) { _, option in
+            AppearanceController.apply(option)
+        }
     }
 
     /// 画面からモデルを参照しなくなってから消したいので、リセット専用の画面に切り替えてから実行する

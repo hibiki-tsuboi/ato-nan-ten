@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 
 enum AppColorSchemeOption: String, CaseIterable, Identifiable {
     case system
@@ -16,12 +17,24 @@ enum AppColorSchemeOption: String, CaseIterable, Identifiable {
         }
     }
 
-    var colorScheme: ColorScheme? {
+    var userInterfaceStyle: UIUserInterfaceStyle {
         switch self {
-        case .system: nil
+        case .system: .unspecified
         case .light: .light
         case .dark: .dark
         }
+    }
+}
+
+/// preferredColorScheme は表示中のモーダルに反映されず、自動（nil）に戻しても
+/// 直前の指定が解除されないため、ウィンドウへ直接適用する。
+@MainActor
+enum AppearanceController {
+    static func apply(_ option: AppColorSchemeOption) {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .forEach { $0.overrideUserInterfaceStyle = option.userInterfaceStyle }
     }
 }
 
