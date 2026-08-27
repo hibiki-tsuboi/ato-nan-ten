@@ -33,7 +33,7 @@ struct SetupFlowView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.backgroundGradient.ignoresSafeArea()
+            AppBackground()
 
             VStack(spacing: 0) {
                 progressHeader

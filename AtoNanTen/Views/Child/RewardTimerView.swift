@@ -14,7 +14,7 @@ struct RewardTimerView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.backgroundGradient.ignoresSafeArea()
+            AppBackground()
 
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 let remaining = max(0, (goal.timerEndsAt ?? context.date).timeIntervalSince(context.date))

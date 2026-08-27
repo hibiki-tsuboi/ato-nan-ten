@@ -79,7 +79,7 @@ struct ChildHomeView: View {
 
     var body: some View {
         ZStack {
-            AppTheme.backgroundGradient.ignoresSafeArea()
+            AppBackground()
 
             ScrollView {
                 VStack(spacing: 18) {

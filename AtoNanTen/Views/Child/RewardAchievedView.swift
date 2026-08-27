@@ -15,12 +15,7 @@ struct RewardAchievedView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [AppTheme.purple, Color(red: 0.34, green: 0.18, blue: 0.66)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            AchievedBackground()
 
             ConfettiView(animate: animate && !reduceMotion)
                 .allowsHitTesting(false)
