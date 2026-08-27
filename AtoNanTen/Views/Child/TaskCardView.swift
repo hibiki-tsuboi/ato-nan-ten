@@ -44,7 +44,7 @@ struct TaskCardView: View {
             .accessibilityHint(availability == .available ? "親の確認待ちにします" : buttonTitle)
         }
         .padding(14)
-        .background(.white.opacity(0.96), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: AppTheme.orange.opacity(0.09), radius: 10, y: 5)
     }
 

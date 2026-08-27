@@ -174,7 +174,7 @@ struct ChildHomeView: View {
 
             ZStack {
                 Circle()
-                    .fill(.white.opacity(0.9))
+                    .fill(AppTheme.card)
                 if isAuthenticating {
                     ProgressView().tint(AppTheme.purple)
                 } else {
@@ -228,7 +228,7 @@ struct ChildHomeView: View {
             .accessibilityLabel("ヒントを閉じる")
         }
         .padding(14)
-        .background(.white.opacity(0.9), in: RoundedRectangle(cornerRadius: 18))
+        .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 18))
     }
 
     private var pendingRewardCard: some View {
@@ -277,7 +277,7 @@ struct ChildHomeView: View {
                         .padding(.horizontal, 15)
                         .frame(minHeight: 44)
                         .background(
-                            sibling.id == child.id ? AppTheme.purple : .white.opacity(0.88),
+                            sibling.id == child.id ? AppTheme.purple : AppTheme.card,
                             in: Capsule()
                         )
                     }

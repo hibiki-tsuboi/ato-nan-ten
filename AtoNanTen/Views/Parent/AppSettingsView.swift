@@ -6,12 +6,26 @@ struct AppSettingsView: View {
     @AppStorage(AppSettings.Key.dailyReminder) private var isDailyReminderEnabled = false
     @AppStorage(AppSettings.Key.dailyReminderHour) private var dailyReminderHour = AppSettings.defaultReminderHour
     @AppStorage("isResettingData") private var isResettingData = false
+    @AppStorage(AppSettings.Key.colorScheme) private var colorSchemeOption = AppColorSchemeOption.system
 
     @State private var showsResetConfirmation = false
     @State private var notificationMessage: String?
 
     var body: some View {
         Form {
+            Section {
+                Picker("画面の見た目", selection: $colorSchemeOption) {
+                    ForEach(AppColorSchemeOption.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+            } header: {
+                Text("見た目")
+            } footer: {
+                Text("「自動」は端末の設定に合わせて、明るい場所ではライト、暗い場所ではダークになります。")
+            }
+
             Section {
                 Toggle("おうちの人の承認を必須にする", isOn: $requiresApproval)
             } header: {

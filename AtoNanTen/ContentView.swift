@@ -15,6 +15,7 @@ struct ContentView: View {
     @AppStorage("selectedChildID") private var selectedChildID = ""
     @AppStorage("hasSeenParentModeHint") private var hasSeenParentModeHint = false
     @AppStorage("isResettingData") private var isResettingData = false
+    @AppStorage(AppSettings.Key.colorScheme) private var colorSchemeOption = AppColorSchemeOption.system
 
     var body: some View {
         Group {
@@ -30,7 +31,7 @@ struct ContentView: View {
                 FamilyHomeView()
             }
         }
-        .preferredColorScheme(.light)
+        .preferredColorScheme(colorSchemeOption.colorScheme)
     }
 
     /// 画面からモデルを参照しなくなってから消したいので、リセット専用の画面に切り替えてから実行する

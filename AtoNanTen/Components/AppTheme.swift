@@ -1,25 +1,44 @@
 import SwiftUI
+import UIKit
 
 enum AppTheme {
-    static let orange = Color(red: 1.00, green: 0.48, blue: 0.20)
-    static let yellow = Color(red: 1.00, green: 0.78, blue: 0.20)
-    static let purple = Color(red: 0.48, green: 0.35, blue: 0.88)
-    static let mint = Color(red: 0.25, green: 0.74, blue: 0.64)
-    static let ink = Color(red: 0.16, green: 0.14, blue: 0.23)
-    static let background = Color(red: 1.00, green: 0.97, blue: 0.91)
+    // アクセントは明暗どちらでも沈まないよう、ダークでわずかに明るくするだけにとどめる
+    static let orange = dynamic(light: (1.00, 0.48, 0.20), dark: (1.00, 0.55, 0.28))
+    static let yellow = dynamic(light: (1.00, 0.78, 0.20), dark: (1.00, 0.82, 0.32))
+    static let purple = dynamic(light: (0.48, 0.35, 0.88), dark: (0.66, 0.56, 0.97))
+    static let mint = dynamic(light: (0.25, 0.74, 0.64), dark: (0.34, 0.83, 0.72))
+
+    /// 文字色
+    static let ink = dynamic(light: (0.16, 0.14, 0.23), dark: (0.96, 0.95, 0.99))
+    /// 画面の下地。カードの中の差し色としても使う
+    static let background = dynamic(light: (1.00, 0.97, 0.91), dark: (0.09, 0.08, 0.15))
+    /// カードなど、下地の上に乗る面
+    static let card = dynamic(light: (0.99, 0.98, 0.96), dark: (0.17, 0.16, 0.25))
+
+    private static let backgroundBottom = dynamic(light: (1.00, 0.93, 0.84), dark: (0.13, 0.11, 0.21))
 
     static let backgroundGradient = LinearGradient(
-        colors: [background, Color(red: 1.0, green: 0.93, blue: 0.84)],
+        colors: [background, backgroundBottom],
         startPoint: .top,
         endPoint: .bottom
     )
+
+    private static func dynamic(
+        light: (red: Double, green: Double, blue: Double),
+        dark: (red: Double, green: Double, blue: Double)
+    ) -> Color {
+        Color(uiColor: UIColor { traits in
+            let components = traits.userInterfaceStyle == .dark ? dark : light
+            return UIColor(red: components.red, green: components.green, blue: components.blue, alpha: 1)
+        })
+    }
 }
 
 struct CardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(18)
-            .background(.white.opacity(0.94), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             .shadow(color: AppTheme.orange.opacity(0.10), radius: 12, y: 6)
     }
 }

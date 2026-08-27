@@ -71,7 +71,7 @@ struct SetupFlowView: View {
             HStack(spacing: 8) {
                 ForEach(0..<3, id: \.self) { index in
                     Capsule()
-                        .fill(index <= step ? AppTheme.orange : .white.opacity(0.8))
+                        .fill(index <= step ? AppTheme.orange : AppTheme.card)
                         .frame(height: 7)
                 }
             }
@@ -248,7 +248,7 @@ struct SetupFlowView: View {
                                     .foregroundStyle(preset.isSelected ? AppTheme.mint : .secondary)
                             }
                             .padding(15)
-                            .background(.white, in: RoundedRectangle(cornerRadius: 18))
+                            .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 18))
                         }
                         .buttonStyle(.plain)
                     }
@@ -307,7 +307,7 @@ struct SetupFlowView: View {
                 }
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 16))
+                .background(AppTheme.card, in: RoundedRectangle(cornerRadius: 16))
 
                 HStack(spacing: 12) {
                     Button("もどる") { step = 1 }
