@@ -6,8 +6,11 @@ struct EmojiPicker: View {
     let candidates: [String]
     var columns = 4
 
+    @State private var draft = ""
+    @FocusState private var isDraftFocused: Bool
+
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: columns), spacing: 12) {
                 ForEach(candidates, id: \.self) { candidate in
                     Button {
@@ -23,24 +26,39 @@ struct EmojiPicker: View {
                 }
             }
 
-            HStack {
-                Text("すきな絵文字を入力")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                TextField("🙂", text: $selection)
-                    .multilineTextAlignment(.center)
-                    .font(.system(size: 28))
-                    .frame(width: 66, height: 44)
-                    .background(AppTheme.background, in: RoundedRectangle(cornerRadius: 12))
-                    .onChange(of: selection) { oldValue, newValue in
-                        let cleaned = Self.lastEmoji(in: newValue)
-                        guard cleaned != newValue else { return }
-                        selection = cleaned.isEmpty ? oldValue : cleaned
-                    }
-                    .accessibilityLabel("絵文字を入力")
+            HStack(spacing: 12) {
+                // いま選ばれているアイコン。入力欄と取り違えないよう、常にここに表示する
+                Text(selection.isEmpty ? "？" : selection)
+                    .font(.system(size: 30))
+                    .frame(width: 54, height: 46)
+                    .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityLabel("いまのアイコン")
+
+                VStack(alignment: .leading, spacing: 3) {
+                    TextField("ほかの絵文字を入力", text: $draft)
+                        .focused($isDraftFocused)
+                        .submitLabel(.done)
+                        .onSubmit { commitDraft() }
+
+                    Text("キーボードの 😀 から選べます")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .onChange(of: isDraftFocused) { _, isFocused in
+                if !isFocused { commitDraft() }
             }
         }
+    }
+
+    /// 入力中は手を出さず、確定したときにだけ絵文字を取り出す。
+    /// 1文字ごとに直すと、日本語入力の変換が途中で戻されてしまうため。
+    private func commitDraft() {
+        let emoji = Self.lastEmoji(in: draft)
+        if !emoji.isEmpty {
+            selection = emoji
+        }
+        draft = ""
     }
 
     nonisolated static func lastEmoji(in value: String) -> String {

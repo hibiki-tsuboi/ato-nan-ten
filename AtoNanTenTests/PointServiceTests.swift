@@ -569,6 +569,16 @@ struct PointServiceTests {
         #expect(running.isTimerRunning(at: now))
     }
 
+    @Test
+    func lastEmojiIsPickedFromTypedText() {
+        #expect(EmojiPicker.lastEmoji(in: "🎁") == "🎁")
+        #expect(EmojiPicker.lastEmoji(in: "ゲーム🎮") == "🎮")
+        #expect(EmojiPicker.lastEmoji(in: "🎮🍦") == "🍦")
+        #expect(EmojiPicker.lastEmoji(in: "👨‍👩‍👧") == "👨‍👩‍👧")
+        #expect(EmojiPicker.lastEmoji(in: "あいう") == "")
+        #expect(EmojiPicker.lastEmoji(in: "") == "")
+    }
+
     private func utcCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
