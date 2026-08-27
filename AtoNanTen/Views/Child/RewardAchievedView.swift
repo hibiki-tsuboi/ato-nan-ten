@@ -8,6 +8,7 @@ struct RewardAchievedView: View {
 
     @Bindable var goal: RewardGoal
     let onPostpone: () -> Void
+    let onRedeem: () -> Void
 
     @State private var animate = false
     @ScaledMetric(relativeTo: .largeTitle) private var headlineSize: CGFloat = 48
@@ -57,7 +58,9 @@ struct RewardAchievedView: View {
                     }
                     .buttonStyle(BouncyButtonStyle(color: AppTheme.mint))
 
-                    Text("ポイントは0にもどって、つぎのチャレンジがはじまるよ")
+                    Text(goal.durationMinutes == nil
+                         ? "ポイントは0にもどって、つぎのチャレンジがはじまるよ"
+                         : "おすと \(RewardDuration.text(for: goal.durationMinutes ?? 0))の タイマーが はじまるよ")
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(.white.opacity(0.78))
                         .multilineTextAlignment(.center)
@@ -87,6 +90,7 @@ struct RewardAchievedView: View {
 
     private func redeemReward() {
         try? PointService.redeem(goal: goal, in: modelContext)
+        onRedeem()
         dismiss()
     }
 }

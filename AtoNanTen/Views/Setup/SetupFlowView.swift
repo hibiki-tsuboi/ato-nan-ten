@@ -363,11 +363,13 @@ struct SetupFlowView: View {
             avatarEmoji: childAvatar,
             sortOrder: children.count
         )
+        let cleanedRewardTitle = rewardTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         let goal = RewardGoal(
             childID: child.id,
-            title: rewardTitle.trimmingCharacters(in: .whitespacesAndNewlines),
+            title: cleanedRewardTitle,
             emoji: rewardEmoji,
-            targetPoints: targetPoints
+            targetPoints: targetPoints,
+            durationMinutes: RewardDuration.minutes(in: cleanedRewardTitle)
         )
         modelContext.insert(child)
         modelContext.insert(goal)

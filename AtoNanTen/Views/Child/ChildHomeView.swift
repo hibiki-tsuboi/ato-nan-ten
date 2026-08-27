@@ -36,7 +36,12 @@ struct ChildHomeView: View {
         self.onSelectChild = onSelectChild
         let isAchievedToday = goal.isConfigured(on: date) && goal.isAchieved
         let isPostponed = AchievementDeferralStore.isPostponed(goalID: goal.id, on: date)
-        _presentedScreen = State(initialValue: isAchievedToday && !isPostponed ? .achievement : nil)
+
+        if goal.isTimerRunning() {
+            _presentedScreen = State(initialValue: .timer)
+        } else {
+            _presentedScreen = State(initialValue: isAchievedToday && !isPostponed ? .achievement : nil)
+        }
     }
 
     private var todayTasks: [TaskItem] {
@@ -131,9 +136,13 @@ struct ChildHomeView: View {
             case .parentMode:
                 ParentHomeView(child: child, goal: goal, date: date)
             case .achievement:
-                RewardAchievedView(goal: goal) {
-                    AchievementDeferralStore.postpone(goalID: goal.id, on: date)
-                }
+                RewardAchievedView(
+                    goal: goal,
+                    onPostpone: { AchievementDeferralStore.postpone(goalID: goal.id, on: date) },
+                    onRedeem: { startRewardTimer() }
+                )
+            case .timer:
+                RewardTimerView(goal: goal) { finishRewardTimer() }
             case .passcodeSetup:
                 ParentPasscodeView(mode: .register) { present(.parentMode) }
             case .passcodeUnlock:
@@ -436,6 +445,22 @@ struct ChildHomeView: View {
         }
     }
 
+    private func startRewardTimer() {
+        guard let minutes = goal.durationMinutes, minutes > 0 else { return }
+
+        let seconds = TimeInterval(minutes * 60)
+        goal.timerEndsAt = Date.now.addingTimeInterval(seconds)
+        try? modelContext.save()
+        NotificationService.scheduleRewardTimerEnd(after: seconds, rewardTitle: goal.title)
+        present(.timer)
+    }
+
+    private func finishRewardTimer() {
+        goal.timerEndsAt = nil
+        try? modelContext.save()
+        NotificationService.cancelRewardTimerEnd()
+    }
+
     private func present(_ screen: ChildModalScreen) {
         guard presentedScreen != screen else { return }
 
@@ -456,6 +481,7 @@ struct ChildHomeView: View {
 private enum ChildModalScreen: Int, Identifiable {
     case parentMode
     case achievement
+    case timer
     case passcodeSetup
     case passcodeUnlock
 

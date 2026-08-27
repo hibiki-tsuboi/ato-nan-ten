@@ -14,6 +14,11 @@ enum DailyChallengeService {
         var hasChanges = false
 
         for goal in goals {
+            if let timerEndsAt = goal.timerEndsAt, timerEndsAt <= date {
+                goal.timerEndsAt = nil
+                hasChanges = true
+            }
+
             guard !goal.isConfigured(on: date, calendar: calendar) else { continue }
 
             if goal.configuredDate != nil, goal.currentPoints != 0 {

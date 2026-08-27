@@ -519,7 +519,7 @@ struct PointServiceTests {
 
     @Test
     func soundFilesAreBundledAndLoadable() throws {
-        for sound in [AppSound.complete, AppSound.celebrate] {
+        for sound in AppSound.allCases {
             let url = try #require(
                 Bundle.main.url(forResource: sound.rawValue, withExtension: "wav"),
                 "\(sound.rawValue).wav がアプリのバンドルに入っていません"
@@ -528,6 +528,45 @@ struct PointServiceTests {
             #expect(AudioServicesCreateSystemSoundID(url as CFURL, &soundID) == kAudioServicesNoError)
             AudioServicesDisposeSystemSoundID(soundID)
         }
+    }
+
+    @Test
+    func rewardDurationIsReadFromTheTitle() {
+        #expect(RewardDuration.minutes(in: "ゲーム 30ぷん") == 30)
+        #expect(RewardDuration.minutes(in: "Switch 30分") == 30)
+        #expect(RewardDuration.minutes(in: "YouTube 15 分") == 15)
+        #expect(RewardDuration.minutes(in: "アイス") == nil)
+        #expect(RewardDuration.minutes(in: "999分") == nil)
+        #expect(RewardDuration.text(for: 30) == "30分")
+        #expect(RewardDuration.text(for: 60) == "1時間")
+    }
+
+    @Test
+    func expiredRewardTimerIsClearedOnPrepare() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let finished = RewardGoal(title: "ゲーム", emoji: "🎮", targetPoints: 5, durationMinutes: 30)
+        finished.markConfigured(on: now, calendar: calendar)
+        finished.timerEndsAt = now.addingTimeInterval(-60)
+        let running = RewardGoal(title: "アイス", emoji: "🍦", targetPoints: 5, durationMinutes: 30)
+        running.markConfigured(on: now, calendar: calendar)
+        running.timerEndsAt = now.addingTimeInterval(600)
+        context.insert(finished)
+        context.insert(running)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [finished, running],
+            tasks: [],
+            requests: [],
+            in: context,
+            date: now,
+            calendar: calendar
+        )
+
+        #expect(finished.timerEndsAt == nil)
+        #expect(running.isTimerRunning(at: now))
     }
 
     private func utcCalendar() -> Calendar {

@@ -6,6 +6,7 @@ enum NotificationService {
     static let pendingApprovalDelay: TimeInterval = 300
 
     private static let dailyReminderIdentifier = "dailyReminder"
+    private static let rewardTimerIdentifier = "rewardTimer"
 
     static func requestAuthorization() async -> Bool {
         let center = UNUserNotificationCenter.current()
@@ -51,6 +52,35 @@ enum NotificationService {
                 content: content,
                 trigger: UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
             )
+        )
+    }
+
+    /// ごほうびの時間が終わったことを知らせる。すでに通知が許可されているときだけ予約する
+    static func scheduleRewardTimerEnd(after seconds: TimeInterval, rewardTitle: String) {
+        guard seconds > 0 else { return }
+
+        Task {
+            let settings = await UNUserNotificationCenter.current().notificationSettings()
+            guard settings.authorizationStatus == .authorized else { return }
+
+            let content = UNMutableNotificationContent()
+            content.title = "ごほうびの じかんが おわりました"
+            content.body = "「\(rewardTitle)」はおしまいです。"
+            content.sound = .default
+
+            try? await UNUserNotificationCenter.current().add(
+                UNNotificationRequest(
+                    identifier: rewardTimerIdentifier,
+                    content: content,
+                    trigger: UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
+                )
+            )
+        }
+    }
+
+    static func cancelRewardTimerEnd() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [rewardTimerIdentifier]
         )
     }
 

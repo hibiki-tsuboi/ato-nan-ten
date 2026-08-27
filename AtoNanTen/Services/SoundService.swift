@@ -1,9 +1,10 @@
 import AudioToolbox
 import Foundation
 
-enum AppSound: String {
+enum AppSound: String, CaseIterable {
     case complete
     case celebrate
+    case finish
 }
 
 @MainActor

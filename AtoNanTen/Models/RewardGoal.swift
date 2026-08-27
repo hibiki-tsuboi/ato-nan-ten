@@ -11,6 +11,10 @@ final class RewardGoal {
     var currentPoints: Int
     var createdAt: Date
     var configuredDate: Date?
+    /// ごほうびを使える時間（分）。nil ならタイマーなし
+    var durationMinutes: Int?
+    /// タイマー実行中の終了時刻
+    var timerEndsAt: Date?
 
     init(
         id: UUID = UUID(),
@@ -20,7 +24,9 @@ final class RewardGoal {
         targetPoints: Int,
         currentPoints: Int = 0,
         createdAt: Date = .now,
-        configuredDate: Date? = Date.now
+        configuredDate: Date? = Date.now,
+        durationMinutes: Int? = nil,
+        timerEndsAt: Date? = nil
     ) {
         self.id = id
         self.childID = childID
@@ -30,6 +36,13 @@ final class RewardGoal {
         self.currentPoints = currentPoints
         self.createdAt = createdAt
         self.configuredDate = configuredDate
+        self.durationMinutes = durationMinutes
+        self.timerEndsAt = timerEndsAt
+    }
+
+    func isTimerRunning(at date: Date = .now) -> Bool {
+        guard let timerEndsAt else { return false }
+        return timerEndsAt > date
     }
 
     var remainingPoints: Int {
