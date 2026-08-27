@@ -249,7 +249,7 @@ struct ChildHomeView: View {
             Text("きょうのチャレンジを準備中")
                 .font(.title3.weight(.heavy))
                 .foregroundStyle(AppTheme.ink)
-            Text("おうちの人が今日のごほうびと行動を設定すると、ここに表示されるよ。")
+            Text("もうすぐ きょうのチャレンジが はじまるよ。")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

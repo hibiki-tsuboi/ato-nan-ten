@@ -14,20 +14,17 @@ enum DailyChallengeService {
         var hasChanges = false
 
         for goal in goals {
-            if goal.configuredDate == nil {
-                goal.markConfigured(on: date, calendar: calendar)
-                hasChanges = true
-                continue
-            }
-
             guard !goal.isConfigured(on: date, calendar: calendar) else { continue }
-            if goal.currentPoints != 0 {
+
+            if goal.configuredDate != nil, goal.currentPoints != 0 {
                 goal.currentPoints = 0
-                hasChanges = true
             }
+            goal.markConfigured(on: date, calendar: calendar)
+            hasChanges = true
         }
 
-        for task in tasks where task.scheduledDate == nil && task.isEnabled {
+        for task in tasks where task.isEnabled {
+            guard !task.isScheduled(on: date, calendar: calendar) else { continue }
             task.setScheduled(true, on: date, calendar: calendar)
             hasChanges = true
         }

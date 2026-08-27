@@ -50,11 +50,7 @@ struct RewardSettingsView: View {
             } header: {
                 Text("目標ポイント")
             } footer: {
-                if goal.isConfigured(on: date) {
-                    Text("今日は\(goal.currentPoints)点です。現在ポイント以下にすると、保存後すぐ達成になります。")
-                } else {
-                    Text("保存すると、今日のチャレンジが0点から始まります。")
-                }
+                Text("今日は\(goal.currentPoints)点です。現在ポイント以下にすると、保存後すぐ達成になります。\nごほうびと目標ポイントは翌日以降も引き継がれ、ポイントだけ毎日0点にもどります。")
             }
         }
         .navigationTitle("ごほうびの設定")
@@ -62,7 +58,7 @@ struct RewardSettingsView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("保存") {
-                    if goal.isConfigured(on: date), targetPoints <= goal.currentPoints {
+                    if targetPoints <= goal.currentPoints {
                         showsTargetWarning = true
                     } else {
                         save()
@@ -81,9 +77,6 @@ struct RewardSettingsView: View {
     }
 
     private func save() {
-        if !goal.isConfigured(on: date) {
-            goal.currentPoints = 0
-        }
         goal.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         goal.emoji = emoji
         goal.targetPoints = targetPoints

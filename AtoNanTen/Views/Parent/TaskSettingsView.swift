@@ -44,17 +44,17 @@ struct TaskSettingsView: View {
                         }
                         .buttonStyle(.plain)
 
-                        Toggle("今日表示", isOn: scheduledBinding(for: task))
+                        Toggle("表示", isOn: scheduledBinding(for: task))
                             .labelsHidden()
-                            .accessibilityLabel("\(task.title)を今日の子ども画面に表示")
+                            .accessibilityLabel("\(task.title)を子ども画面に表示")
                     }
                 }
                 .onDelete(perform: deleteTasks)
                 .onMove(perform: moveTasks)
             } header: {
-                Text("今日、子ども画面に表示する行動")
+                Text("子ども画面に表示する行動")
             } footer: {
-                Text("スイッチをオンにした行動だけが今日の子ども画面に表示されます。登録済みの行動は翌日もここに残ります。")
+                Text("スイッチをオンにした行動だけが子ども画面に表示されます。この選択は翌日以降もそのまま引き継がれるので、毎日設定し直す必要はありません。")
             }
         }
         .navigationTitle("行動の設定")

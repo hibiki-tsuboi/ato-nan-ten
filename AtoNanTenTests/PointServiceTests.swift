@@ -238,6 +238,102 @@ struct PointServiceTests {
         #expect(!hiddenTask.isScheduled(on: today, calendar: calendar))
     }
 
+    @Test
+    func rewardCarriesOverToTheNextDayWithPointsReset() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let yesterday = Date(timeIntervalSince1970: 1_800_000_000)
+        let today = calendar.date(byAdding: .day, value: 1, to: yesterday)!
+        let goal = RewardGoal(
+            title: "ゲーム",
+            emoji: "🎮",
+            targetPoints: 5,
+            currentPoints: 5,
+            configuredDate: yesterday
+        )
+        context.insert(goal)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [goal],
+            tasks: [],
+            requests: [],
+            in: context,
+            date: today,
+            calendar: calendar
+        )
+
+        #expect(goal.isConfigured(on: today, calendar: calendar))
+        #expect(goal.currentPoints == 0)
+        #expect(!goal.isAchieved)
+        #expect(goal.title == "ゲーム")
+        #expect(goal.emoji == "🎮")
+        #expect(goal.targetPoints == 5)
+    }
+
+    @Test
+    func visibleTasksCarryOverToTheNextDay() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let yesterday = Date(timeIntervalSince1970: 1_800_000_000)
+        let today = calendar.date(byAdding: .day, value: 1, to: yesterday)!
+        let visibleTask = TaskItem(
+            title: "くもん",
+            emoji: "✏️",
+            points: 2,
+            scheduledDate: yesterday
+        )
+        let hiddenTask = TaskItem(
+            title: "読書",
+            emoji: "📖",
+            points: 1,
+            scheduledDate: yesterday
+        )
+        hiddenTask.setScheduled(false, on: yesterday, calendar: calendar)
+        context.insert(visibleTask)
+        context.insert(hiddenTask)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [],
+            tasks: [visibleTask, hiddenTask],
+            requests: [],
+            in: context,
+            date: today,
+            calendar: calendar
+        )
+
+        #expect(visibleTask.isScheduled(on: today, calendar: calendar))
+        #expect(!hiddenTask.isScheduled(on: today, calendar: calendar))
+    }
+
+    @Test
+    func visibleTasksCarryOverAfterSeveralUnusedDays() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let lastUsedDay = Date(timeIntervalSince1970: 1_800_000_000)
+        let today = calendar.date(byAdding: .day, value: 9, to: lastUsedDay)!
+        let task = TaskItem(
+            title: "おてつだい",
+            emoji: "🧹",
+            points: 1,
+            scheduledDate: lastUsedDay
+        )
+        context.insert(task)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [],
+            tasks: [task],
+            requests: [],
+            in: context,
+            date: today,
+            calendar: calendar
+        )
+
+        #expect(task.isScheduled(on: today, calendar: calendar))
+    }
+
     private func utcCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
