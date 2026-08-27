@@ -12,10 +12,16 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ChildProfile.sortOrder) private var children: [ChildProfile]
     @Query(sort: \RewardGoal.createdAt) private var goals: [RewardGoal]
+    @AppStorage("selectedChildID") private var selectedChildID = ""
+    @AppStorage("hasSeenParentModeHint") private var hasSeenParentModeHint = false
+    @AppStorage("isResettingData") private var isResettingData = false
 
     var body: some View {
         Group {
-            if children.isEmpty && goals.isEmpty {
+            if isResettingData {
+                ProgressView("リセットしています…")
+                    .task { performReset() }
+            } else if children.isEmpty && goals.isEmpty {
                 SetupFlowView()
             } else if children.isEmpty {
                 ProgressView("データを準備しています…")
@@ -25,6 +31,22 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(.light)
+    }
+
+    /// 画面からモデルを参照しなくなってから消したいので、リセット専用の画面に切り替えてから実行する
+    private func performReset() {
+        try? modelContext.delete(model: CompletionRequest.self)
+        try? modelContext.delete(model: PointHistory.self)
+        try? modelContext.delete(model: RewardRedemption.self)
+        try? modelContext.delete(model: DailyAchievement.self)
+        try? modelContext.delete(model: TaskItem.self)
+        try? modelContext.delete(model: RewardGoal.self)
+        try? modelContext.delete(model: ChildProfile.self)
+        try? modelContext.save()
+
+        selectedChildID = ""
+        hasSeenParentModeHint = false
+        isResettingData = false
     }
 
     private func migrateLegacyData() {
@@ -126,6 +148,7 @@ private struct FamilyHomeView: View {
             TaskItem.self,
             CompletionRequest.self,
             PointHistory.self,
-            RewardRedemption.self
+            RewardRedemption.self,
+            DailyAchievement.self
         ], inMemory: true)
 }

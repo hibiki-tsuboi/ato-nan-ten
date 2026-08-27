@@ -10,6 +10,7 @@ struct RewardAchievedView: View {
     let onPostpone: () -> Void
 
     @State private var animate = false
+    @ScaledMetric(relativeTo: .largeTitle) private var headlineSize: CGFloat = 48
 
     var body: some View {
         ZStack {
@@ -30,7 +31,7 @@ struct RewardAchievedView: View {
                         .scaleEffect(animate && !reduceMotion ? 1.12 : 0.86)
 
                     Text("\(goal.currentPoints)てん\nたまった！")
-                        .font(.system(size: 48, weight: .black, design: .rounded))
+                        .font(.system(size: headlineSize, weight: .black, design: .rounded))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .minimumScaleFactor(0.7)
@@ -75,6 +76,7 @@ struct RewardAchievedView: View {
             }
             .scrollIndicators(.hidden)
         }
+        .sensoryFeedback(.success, trigger: animate)
         .task {
             withAnimation(.spring(response: 0.55, dampingFraction: 0.55).repeatCount(2, autoreverses: true)) {
                 animate = true

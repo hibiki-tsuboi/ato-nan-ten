@@ -12,6 +12,9 @@ final class TaskItem {
     var isEnabled: Bool
     var sortOrder: Int
     var scheduledDate: Date?
+    var weekdayMask: Int = TaskItem.everyWeekday
+
+    static let everyWeekday = 0b1111111
 
     init(
         id: UUID = UUID(),
@@ -22,7 +25,8 @@ final class TaskItem {
         dailyLimit: Int? = 1,
         isEnabled: Bool = true,
         sortOrder: Int = 0,
-        scheduledDate: Date? = nil
+        scheduledDate: Date? = nil,
+        weekdayMask: Int = TaskItem.everyWeekday
     ) {
         self.id = id
         self.childID = childID
@@ -33,6 +37,7 @@ final class TaskItem {
         self.isEnabled = isEnabled
         self.sortOrder = sortOrder
         self.scheduledDate = scheduledDate
+        self.weekdayMask = weekdayMask
     }
 
     func isScheduled(on date: Date, calendar: Calendar = .current) -> Bool {
@@ -40,8 +45,41 @@ final class TaskItem {
         return AppDay.isSameDay(scheduledDate, date, calendar: calendar)
     }
 
-    func setScheduled(_ isScheduled: Bool, on date: Date, calendar: Calendar = .current) {
-        scheduledDate = isScheduled ? AppDay.start(of: date, calendar: calendar) : nil
-        isEnabled = isScheduled
+    var isEveryWeekday: Bool {
+        weekdayMask & TaskItem.everyWeekday == TaskItem.everyWeekday
+    }
+
+    func isWeekdayOn(_ weekday: Int) -> Bool {
+        weekdayMask & (1 << (weekday - 1)) != 0
+    }
+
+    func setWeekday(_ weekday: Int, isOn: Bool) {
+        let bit = 1 << (weekday - 1)
+        if isOn {
+            weekdayMask |= bit
+        } else {
+            weekdayMask &= ~bit
+        }
+    }
+
+    func isActiveWeekday(on date: Date, calendar: Calendar = .current) -> Bool {
+        let weekday = calendar.component(.weekday, from: AppDay.start(of: date, calendar: calendar))
+        return isWeekdayOn(weekday)
+    }
+
+    func setEnabled(_ isEnabled: Bool, on date: Date, calendar: Calendar = .current) {
+        self.isEnabled = isEnabled
+        refreshSchedule(on: date, calendar: calendar)
+    }
+
+    /// 表示オンかつ今日が対象の曜日なら当日に繰り越す。変化があったら true。
+    @discardableResult
+    func refreshSchedule(on date: Date, calendar: Calendar = .current) -> Bool {
+        let updated = isEnabled && isActiveWeekday(on: date, calendar: calendar)
+            ? AppDay.start(of: date, calendar: calendar)
+            : nil
+        guard updated != scheduledDate else { return false }
+        scheduledDate = updated
+        return true
     }
 }

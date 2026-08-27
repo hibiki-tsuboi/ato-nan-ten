@@ -20,7 +20,8 @@ struct AtoNanTenApp: App {
             TaskItem.self,
             CompletionRequest.self,
             PointHistory.self,
-            RewardRedemption.self
+            RewardRedemption.self,
+            DailyAchievement.self
         ])
     }
 }

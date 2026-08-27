@@ -22,7 +22,13 @@ No formatter or linter is configured. Use Xcode's indentation tools and keep bui
 
 ## Testing Guidelines
 
-The project currently has no test target or coverage requirement. New behavior should introduce an `AtoNanTenTests` unit-test target; use names such as `ScoreCalculatorTests.swift` and describe the expected behavior in each test. Add UI tests only for critical user flows. Once a test target exists, run it with `xcodebuild test` using the project, scheme, and an installed simulator destination.
+Unit tests live in `AtoNanTenTests/` and use Swift Testing (`@Test` / `#expect`). `PointServiceTests.swift` covers the point, approval, daily-reset, weekday, and streak logic. Name tests after the behavior they describe, and keep pure logic in `Services/` so it can be tested without a view. Add UI tests only for critical user flows.
+
+Run the suite with an installed simulator destination:
+
+```
+xcodebuild test -project AtoNanTen.xcodeproj -scheme AtoNanTen -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO
+```
 
 ## Commit & Pull Request Guidelines
 

@@ -23,10 +23,10 @@ enum DailyChallengeService {
             hasChanges = true
         }
 
-        for task in tasks where task.isEnabled {
-            guard !task.isScheduled(on: date, calendar: calendar) else { continue }
-            task.setScheduled(true, on: date, calendar: calendar)
-            hasChanges = true
+        for task in tasks {
+            if task.refreshSchedule(on: date, calendar: calendar) {
+                hasChanges = true
+            }
         }
 
         for request in requests where request.status == .pending {

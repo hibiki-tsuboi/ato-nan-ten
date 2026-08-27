@@ -66,12 +66,12 @@ struct ChildrenSettingsView: View {
                 Button {
                     showsAddChild = true
                 } label: {
-                    Label("きょうだいを追加", systemImage: "person.badge.plus")
+                    Label("子どもを追加", systemImage: "person.badge.plus")
                         .font(.headline)
                 }
             }
         }
-        .navigationTitle("きょうだいの管理")
+        .navigationTitle("子どもの管理")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -157,22 +157,7 @@ private struct ChildProfileEditorView: View {
             }
 
             Section("アイコン") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 14) {
-                    ForEach(avatars, id: \.self) { avatar in
-                        Button {
-                            avatarEmoji = avatar
-                        } label: {
-                            Text(avatar)
-                                .font(.system(size: 38))
-                                .frame(maxWidth: .infinity, minHeight: 62)
-                                .background(
-                                    avatarEmoji == avatar ? AppTheme.yellow.opacity(0.3) : Color.clear,
-                                    in: RoundedRectangle(cornerRadius: 14)
-                                )
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
+                EmojiPicker(selection: $avatarEmoji, candidates: avatars, columns: 3)
             }
         }
         .navigationTitle("プロフィール編集")

@@ -18,6 +18,7 @@ struct SetupFlowView: View {
     @State private var targetPoints = 5
     @State private var presets = SetupTaskPreset.defaults
     @FocusState private var focusedField: SetupField?
+    @ScaledMetric(relativeTo: .largeTitle) private var targetPointsSize: CGFloat = 52
 
     private let rewardEmojis = ["🎮", "🍦", "🍭", "📺", "🧸", "🚲"]
     private let childAvatars = ["🧒", "👦", "👧", "🐶", "🐱", "🐰"]
@@ -90,6 +91,10 @@ struct SetupFlowView: View {
                     subtitle: "プロフィールとごほうびを決めます"
                 )
 
+                if !isAddingSibling {
+                    setupIntro
+                }
+
                 VStack(alignment: .leading, spacing: 18) {
                     Text("おなまえ")
                         .font(.headline)
@@ -152,9 +157,11 @@ struct SetupFlowView: View {
                         }
 
                         Text("\(targetPoints)")
-                            .font(.system(size: 52, weight: .black, design: .rounded))
+                            .font(.system(size: targetPointsSize, weight: .black, design: .rounded))
                             .foregroundStyle(AppTheme.purple)
                             .frame(minWidth: 80)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
 
                         stepperButton(systemName: "plus", disabled: targetPoints >= 99) {
                             targetPoints += 1
@@ -183,6 +190,33 @@ struct SetupFlowView: View {
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
             .background(.ultraThinMaterial)
+        }
+    }
+
+    private var setupIntro: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("このアプリでできること")
+                .font(.subheadline.weight(.heavy))
+                .foregroundStyle(.secondary)
+            introRow(number: 1, text: "こどもが「できた！」をおす")
+            introRow(number: 2, text: "おうちの人が承認する")
+            introRow(number: 3, text: "ポイントがたまって、ごほうびをゲット")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .appCard()
+    }
+
+    private func introRow(number: Int, text: String) -> some View {
+        HStack(spacing: 12) {
+            Text("\(number)")
+                .font(.subheadline.weight(.black))
+                .foregroundStyle(.white)
+                .frame(width: 26, height: 26)
+                .background(AppTheme.orange, in: Circle())
+            Text(text)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(AppTheme.ink)
+            Spacer(minLength: 0)
         }
     }
 

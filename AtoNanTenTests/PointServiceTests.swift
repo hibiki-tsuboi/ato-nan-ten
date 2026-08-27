@@ -384,7 +384,7 @@ struct PointServiceTests {
             points: 1,
             scheduledDate: yesterday
         )
-        hiddenTask.setScheduled(false, on: yesterday, calendar: calendar)
+        hiddenTask.setEnabled(false, on: yesterday, calendar: calendar)
         context.insert(visibleTask)
         context.insert(hiddenTask)
 
@@ -428,6 +428,94 @@ struct PointServiceTests {
         #expect(task.isScheduled(on: today, calendar: calendar))
     }
 
+    @Test
+    func taskAppearsOnlyOnSelectedWeekdays() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let friday = Date(timeIntervalSince1970: 1_800_000_000)
+        let saturday = calendar.date(byAdding: .day, value: 1, to: friday)!
+        let task = TaskItem(
+            title: "ピアノ",
+            emoji: "🎹",
+            points: 2,
+            weekdayMask: 1 << 5
+        )
+        context.insert(task)
+
+        try DailyChallengeService.prepareForToday(
+            goals: [], tasks: [task], requests: [], in: context, date: friday, calendar: calendar
+        )
+        #expect(task.isScheduled(on: friday, calendar: calendar))
+
+        try DailyChallengeService.prepareForToday(
+            goals: [], tasks: [task], requests: [], in: context, date: saturday, calendar: calendar
+        )
+        #expect(!task.isScheduled(on: saturday, calendar: calendar))
+        #expect(task.isEnabled)
+    }
+
+    @Test
+    func streakCountsConsecutiveAchievedDays() {
+        let calendar = utcCalendar()
+        let today = Date(timeIntervalSince1970: 1_800_000_000)
+        func day(_ offset: Int) -> Date {
+            calendar.date(byAdding: .day, value: offset, to: today)!
+        }
+
+        #expect(StreakCalculator.currentStreak(
+            achievedDays: [day(0), day(-1), day(-2)], on: today, calendar: calendar
+        ) == 3)
+
+        #expect(StreakCalculator.currentStreak(
+            achievedDays: [day(-1), day(-2)], on: today, calendar: calendar
+        ) == 2)
+
+        #expect(StreakCalculator.currentStreak(
+            achievedDays: [day(0), day(-2)], on: today, calendar: calendar
+        ) == 1)
+
+        #expect(StreakCalculator.currentStreak(achievedDays: [], on: today, calendar: calendar) == 0)
+    }
+
+    @Test
+    func achievementIsRecordedOncePerDay() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let calendar = utcCalendar()
+        let today = Date(timeIntervalSince1970: 1_800_000_000)
+        let goal = RewardGoal(title: "ゲーム", emoji: "🎮", targetPoints: 2, currentPoints: 2)
+        context.insert(goal)
+
+        #expect(PointService.recordAchievementIfNeeded(goal: goal, in: context, date: today, calendar: calendar))
+        try context.save()
+        #expect(!PointService.recordAchievementIfNeeded(goal: goal, in: context, date: today, calendar: calendar))
+
+        let achievements = try context.fetch(FetchDescriptor<DailyAchievement>())
+        #expect(achievements.count == 1)
+        #expect(achievements.first?.earnedPoints == 2)
+    }
+
+    @Test
+    func completingWithoutApprovalAddsPointsImmediately() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let childID = UUID()
+        let goal = RewardGoal(childID: childID, title: "アイス", emoji: "🍦", targetPoints: 5)
+        let task = TaskItem(childID: childID, title: "読書", emoji: "📖", points: 2)
+        context.insert(goal)
+        context.insert(task)
+
+        try PointService.completeWithoutApproval(task: task, goal: goal, in: context)
+
+        #expect(goal.currentPoints == 2)
+        let requests = try context.fetch(FetchDescriptor<CompletionRequest>())
+        #expect(requests.count == 1)
+        #expect(requests.first?.status == .approved)
+        let histories = try context.fetch(FetchDescriptor<PointHistory>())
+        #expect(histories.count == 1)
+    }
+
     private func utcCalendar() -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
@@ -442,6 +530,7 @@ struct PointServiceTests {
             CompletionRequest.self,
             PointHistory.self,
             RewardRedemption.self,
+            DailyAchievement.self,
             configurations: configuration
         )
     }

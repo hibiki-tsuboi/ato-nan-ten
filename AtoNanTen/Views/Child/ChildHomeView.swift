@@ -5,6 +5,7 @@ struct ChildHomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TaskItem.sortOrder) private var tasks: [TaskItem]
     @Query(sort: \CompletionRequest.requestedAt, order: .reverse) private var requests: [CompletionRequest]
+    @Query private var achievements: [DailyAchievement]
 
     let child: ChildProfile
     @Bindable var goal: RewardGoal
@@ -16,7 +17,10 @@ struct ChildHomeView: View {
     @State private var isAuthenticating = false
     @State private var authenticationMessage: String?
     @State private var showsParentModeHint = false
+    @ScaledMetric(relativeTo: .largeTitle) private var remainingPointsSize: CGFloat = 70
     @AppStorage("hasSeenParentModeHint") private var hasSeenParentModeHint = false
+    @AppStorage(AppSettings.Key.requiresApproval) private var requiresApproval = true
+    @State private var completionCount = 0
 
     init(
         child: ChildProfile,
@@ -55,6 +59,13 @@ struct ChildHomeView: View {
 
     private var isParentModeHintVisible: Bool {
         showsParentModeHint || !hasSeenParentModeHint
+    }
+
+    private var streak: Int {
+        StreakCalculator.currentStreak(
+            achievedDays: achievements.filter { $0.childID == child.id }.map(\.achievedOn),
+            on: date
+        )
     }
 
     private var pendingCount: Int {
@@ -114,6 +125,7 @@ struct ChildHomeView: View {
             .scrollIndicators(.hidden)
         }
         .tint(AppTheme.orange)
+        .sensoryFeedback(.success, trigger: completionCount)
         .fullScreenCover(item: $presentedScreen, onDismiss: presentQueuedScreen) { screen in
             switch screen {
             case .parentMode:
@@ -150,10 +162,10 @@ struct ChildHomeView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("あとなんてん？")
+                Text("ごほうびプラス")
                     .font(.title2.weight(.black))
                     .foregroundStyle(AppTheme.ink)
-                Text("ごほうびまでのチャレンジ")
+                Text("あと なんてん？ ごほうびまでのチャレンジ")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
@@ -286,16 +298,27 @@ struct ChildHomeView: View {
                     .foregroundStyle(AppTheme.ink.opacity(0.7))
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("\(goal.remainingPoints)")
-                        .font(.system(size: 70, weight: .black, design: .rounded))
+                        .font(.system(size: remainingPointsSize, weight: .black, design: .rounded))
                         .foregroundStyle(AppTheme.orange)
                         .contentTransition(.numericText())
                     Text("てん！")
                         .font(.system(.largeTitle, design: .rounded, weight: .black))
                         .foregroundStyle(AppTheme.ink)
                 }
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             }
 
             PointProgressView(currentPoints: goal.currentPoints, targetPoints: goal.targetPoints)
+
+            if streak >= 2 {
+                Text("🔥 \(streak)にち れんぞく！")
+                    .font(.subheadline.weight(.heavy))
+                    .foregroundStyle(AppTheme.orange)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 7)
+                    .background(AppTheme.orange.opacity(0.14), in: Capsule())
+            }
 
             HStack(spacing: 13) {
                 Text(goal.emoji)
@@ -360,10 +383,10 @@ struct ChildHomeView: View {
         VStack(spacing: 10) {
             Text("☀️")
                 .font(.system(size: 40))
-            Text("きょうの行動はまだないよ")
+            Text("きょうの やることは まだないよ")
                 .font(.headline)
                 .foregroundStyle(AppTheme.ink)
-            Text("おうちの人が選んだ行動だけ、ここに表示されます。")
+            Text("おうちの人が えらんだ やることが ここに でるよ。")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -378,7 +401,19 @@ struct ChildHomeView: View {
 
     private func requestCompletion(for task: TaskItem) {
         guard availability(for: task) == .available else { return }
-        try? PointService.requestCompletion(for: task, in: modelContext)
+
+        if requiresApproval {
+            guard let request = try? PointService.requestCompletion(for: task, in: modelContext) else { return }
+            NotificationService.schedulePendingApproval(
+                requestID: request.id,
+                childName: child.name,
+                taskTitle: task.title
+            )
+        } else {
+            try? PointService.completeWithoutApproval(task: task, goal: goal, in: modelContext)
+        }
+
+        completionCount += 1
     }
 
     private func openParentMode() {

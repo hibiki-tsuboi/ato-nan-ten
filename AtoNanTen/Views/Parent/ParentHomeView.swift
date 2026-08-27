@@ -53,16 +53,18 @@ struct ParentHomeView: View {
                         }
 
                         VStack(spacing: 1) {
-                            ParentMenuLink(
-                                title: "承認待ち",
-                                subtitle: pendingCount == 0 ? "現在ありません" : "\(pendingCount)件を確認",
-                                systemName: "checkmark.seal.fill",
-                                color: AppTheme.orange
-                            ) {
-                                ApprovalListView(child: child, goal: goal, date: date)
-                            }
+                            if pendingCount == 0 {
+                                ParentMenuLink(
+                                    title: "承認待ち",
+                                    subtitle: "現在ありません",
+                                    systemName: "checkmark.seal.fill",
+                                    color: AppTheme.orange
+                                ) {
+                                    ApprovalListView(child: child, goal: goal, date: date)
+                                }
 
-                            Divider().padding(.leading, 66)
+                                Divider().padding(.leading, 66)
+                            }
 
                             ParentMenuLink(
                                 title: "行動を設定",
@@ -98,7 +100,7 @@ struct ParentHomeView: View {
                             Divider().padding(.leading, 66)
 
                             ParentMenuLink(
-                                title: "きょうだいを管理",
+                                title: "子どもを管理",
                                 subtitle: "追加・名前・アイコン",
                                 systemName: "person.2.fill",
                                 color: .teal
@@ -114,7 +116,18 @@ struct ParentHomeView: View {
                                 systemName: "clock.fill",
                                 color: .pink
                             ) {
-                                HistoryView(child: child)
+                                HistoryView(child: child, date: date)
+                            }
+
+                            Divider().padding(.leading, 66)
+
+                            ParentMenuLink(
+                                title: "アプリの設定",
+                                subtitle: "承認・通知・データ",
+                                systemName: "gearshape.fill",
+                                color: .gray
+                            ) {
+                                AppSettingsView()
                             }
                         }
                         .background(.background, in: RoundedRectangle(cornerRadius: 20))

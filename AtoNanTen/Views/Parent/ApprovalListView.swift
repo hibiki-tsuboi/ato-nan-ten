@@ -8,6 +8,8 @@ struct ApprovalListView: View {
     @Bindable var goal: RewardGoal
     let date: Date
 
+    @State private var approvalCount = 0
+
     private var pendingRequests: [CompletionRequest] {
         requests.filter {
             $0.childID == child.id &&
@@ -71,10 +73,12 @@ struct ApprovalListView: View {
         }
         .navigationTitle("承認待ち")
         .navigationBarTitleDisplayMode(.inline)
+        .sensoryFeedback(.success, trigger: approvalCount)
     }
 
     private func approve(_ request: CompletionRequest) {
         try? PointService.approve(request, goal: goal, in: modelContext)
+        approvalCount += 1
     }
 
     private func reject(_ request: CompletionRequest) {

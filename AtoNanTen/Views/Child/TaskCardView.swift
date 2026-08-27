@@ -31,9 +31,12 @@ struct TaskCardView: View {
                         .font(.headline)
                     Text(buttonTitle)
                         .font(.caption.weight(.heavy))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
                 .foregroundStyle(buttonForeground)
-                .frame(width: 88, height: 56)
+                .padding(.horizontal, 10)
+                .frame(minWidth: 88, minHeight: 56)
                 .background(buttonBackground, in: RoundedRectangle(cornerRadius: 17))
             }
             .buttonStyle(.plain)

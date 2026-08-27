@@ -30,15 +30,74 @@ enum PointService {
         return .available
     }
 
-    static func requestCompletion(for task: TaskItem, in context: ModelContext) throws {
-        context.insert(CompletionRequest(
+    @discardableResult
+    static func requestCompletion(for task: TaskItem, in context: ModelContext) throws -> CompletionRequest {
+        let request = CompletionRequest(
             childID: task.childID,
             taskID: task.id,
             taskTitle: task.title,
             taskEmoji: task.emoji,
             points: task.points
-        ))
+        )
+        context.insert(request)
         try context.save()
+        return request
+    }
+
+    /// 承認なしモード用。申請を作らずにその場で加点する。
+    static func completeWithoutApproval(
+        task: TaskItem,
+        goal: RewardGoal,
+        in context: ModelContext,
+        date: Date = .now
+    ) throws {
+        context.insert(CompletionRequest(
+            childID: task.childID,
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points,
+            requestedAt: date,
+            status: .approved
+        ))
+        goal.currentPoints += task.points
+        context.insert(PointHistory(
+            childID: task.childID,
+            title: task.title,
+            points: task.points,
+            type: .task
+        ))
+        recordAchievementIfNeeded(goal: goal, in: context, date: date)
+        try context.save()
+    }
+
+    /// その日はじめて目標に届いたときだけ達成を記録する。
+    @discardableResult
+    static func recordAchievementIfNeeded(
+        goal: RewardGoal,
+        in context: ModelContext,
+        date: Date = .now,
+        calendar: Calendar = .current
+    ) -> Bool {
+        guard goal.isAchieved else { return false }
+
+        let day = AppDay.start(of: date, calendar: calendar)
+        let achievements = (try? context.fetch(FetchDescriptor<DailyAchievement>())) ?? []
+        guard !achievements.contains(where: { $0.goalID == goal.id && $0.achievedOn == day }) else {
+            return false
+        }
+
+        context.insert(DailyAchievement(
+            childID: goal.childID,
+            goalID: goal.id,
+            rewardTitle: goal.title,
+            rewardEmoji: goal.emoji,
+            earnedPoints: goal.currentPoints,
+            targetPoints: goal.targetPoints,
+            achievedOn: day,
+            achievedAt: date
+        ))
+        return true
     }
 
     static func approve(
@@ -55,12 +114,15 @@ enum PointService {
             points: request.points,
             type: .task
         ))
+        recordAchievementIfNeeded(goal: goal, in: context)
+        NotificationService.cancelPendingApproval(requestID: request.id)
         try context.save()
     }
 
     static func reject(_ request: CompletionRequest, in context: ModelContext) throws {
         guard request.status == .pending else { return }
         request.status = .rejected
+        NotificationService.cancelPendingApproval(requestID: request.id)
         try context.save()
     }
 
@@ -82,6 +144,7 @@ enum PointService {
             points: actualAdjustment,
             type: .manualAdjustment
         ))
+        recordAchievementIfNeeded(goal: goal, in: context)
         try context.save()
         return actualAdjustment
     }

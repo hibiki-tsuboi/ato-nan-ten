@@ -4,7 +4,14 @@ import SwiftUI
 struct HistoryView: View {
     @Query(sort: \PointHistory.createdAt, order: .reverse) private var histories: [PointHistory]
     @Query(sort: \RewardRedemption.redeemedAt, order: .reverse) private var redemptions: [RewardRedemption]
+    @Query private var achievements: [DailyAchievement]
+
     let child: ChildProfile
+    let date: Date
+
+    @State private var showsAllRedemptions = false
+
+    private let redemptionPreviewCount = 3
 
     private var childHistories: [PointHistory] {
         histories.filter { $0.childID == child.id }
@@ -12,6 +19,41 @@ struct HistoryView: View {
 
     private var childRedemptions: [RewardRedemption] {
         redemptions.filter { $0.childID == child.id }
+    }
+
+    private var visibleRedemptions: [RewardRedemption] {
+        showsAllRedemptions ? childRedemptions : Array(childRedemptions.prefix(redemptionPreviewCount))
+    }
+
+    private var childAchievements: [DailyAchievement] {
+        achievements.filter { $0.childID == child.id }
+    }
+
+    private var achievedDays: Set<Date> {
+        Set(childAchievements.map { AppDay.start(of: $0.achievedOn) })
+    }
+
+    private var streak: Int {
+        StreakCalculator.currentStreak(achievedDays: childAchievements.map(\.achievedOn), on: date)
+    }
+
+    /// 直近7日ぶんを古い順に並べたもの
+    private var recentDays: [Date] {
+        let today = AppDay.start(of: date)
+        return (0..<7).reversed().compactMap {
+            Calendar.current.date(byAdding: .day, value: -$0, to: today)
+        }
+    }
+
+    private var weeklyAchievedCount: Int {
+        recentDays.filter { achievedDays.contains($0) }.count
+    }
+
+    private var weeklyPoints: Int {
+        guard let start = recentDays.first else { return 0 }
+        return childHistories
+            .filter { $0.points > 0 && AppDay.start(of: $0.createdAt) >= start }
+            .reduce(0) { $0 + $1.points }
     }
 
     private var groupedHistories: [(date: Date, entries: [PointHistory])] {
@@ -33,9 +75,13 @@ struct HistoryView: View {
                 )
             } else {
                 List {
+                    Section("この1週間") {
+                        weeklySummary
+                    }
+
                     if !childRedemptions.isEmpty {
-                        Section("ごほうび達成") {
-                            ForEach(childRedemptions) { redemption in
+                        Section("ごほうびを受け取った記録") {
+                            ForEach(visibleRedemptions) { redemption in
                                 HStack(spacing: 12) {
                                     Text(redemption.rewardEmoji).font(.title)
                                     VStack(alignment: .leading, spacing: 2) {
@@ -52,13 +98,18 @@ struct HistoryView: View {
                                         .foregroundStyle(AppTheme.purple)
                                 }
                             }
+
+                            if childRedemptions.count > redemptionPreviewCount {
+                                Button(showsAllRedemptions ? "最近の\(redemptionPreviewCount)件だけ表示" : "すべて見る（\(childRedemptions.count)件）") {
+                                    showsAllRedemptions.toggle()
+                                }
+                                .font(.subheadline.weight(.bold))
+                            }
                         }
                     }
 
                     ForEach(groupedHistories, id: \.date) { group in
-                        Section(group.date.formatted(
-                            .dateTime.year().month().day().weekday().locale(Locale(identifier: "ja_JP"))
-                        )) {
+                        Section {
                             ForEach(group.entries) { history in
                                 HStack(spacing: 12) {
                                     Image(systemName: icon(for: history))
@@ -88,6 +139,16 @@ struct HistoryView: View {
                                 Text(signedTotal(group.entries.reduce(0) { $0 + $1.points }))
                                     .font(.caption.monospacedDigit().weight(.bold))
                             }
+                        } header: {
+                            HStack(spacing: 8) {
+                                Text(group.date.formatted(
+                                    .dateTime.year().month().day().weekday().locale(Locale(identifier: "ja_JP"))
+                                ))
+                                if achievedDays.contains(group.date) {
+                                    Text("🎉 目標達成")
+                                        .foregroundStyle(AppTheme.orange)
+                                }
+                            }
                         }
                     }
                 }
@@ -96,6 +157,41 @@ struct HistoryView: View {
         }
         .navigationTitle("履歴")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var weeklySummary: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Label("\(weeklyAchievedCount)日 達成", systemImage: "star.fill")
+                    .foregroundStyle(AppTheme.orange)
+                Spacer()
+                Text("獲得 \(weeklyPoints)点")
+                    .foregroundStyle(AppTheme.purple)
+            }
+            .font(.subheadline.weight(.bold))
+
+            HStack(spacing: 6) {
+                ForEach(recentDays, id: \.self) { day in
+                    VStack(spacing: 6) {
+                        Text(WeekdayFormatter.symbols[Calendar.current.component(.weekday, from: day) - 1])
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.secondary)
+                        Image(systemName: achievedDays.contains(day) ? "star.fill" : "circle.dashed")
+                            .font(.headline)
+                            .foregroundStyle(achievedDays.contains(day) ? AppTheme.yellow : AppTheme.ink.opacity(0.22))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+
+            if streak >= 2 {
+                Text("🔥 \(streak)日連続で達成中")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(AppTheme.orange)
+            }
+        }
+        .padding(.vertical, 6)
     }
 
     private func icon(for history: PointHistory) -> String {

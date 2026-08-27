@@ -29,20 +29,7 @@ struct RewardSettingsView: View {
             }
 
             Section("アイコン") {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
-                    ForEach(emojis, id: \.self) { candidate in
-                        Button {
-                            emoji = candidate
-                        } label: {
-                            Text(candidate)
-                                .font(.system(size: 34))
-                                .frame(maxWidth: .infinity, minHeight: 54)
-                                .background(emoji == candidate ? AppTheme.yellow.opacity(0.3) : Color.clear)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
+                EmojiPicker(selection: $emoji, candidates: emojis)
             }
 
             Section {

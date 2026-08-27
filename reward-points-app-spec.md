@@ -111,16 +111,32 @@ v1.0 では、ポイントを消費する銀行方式ではなく、
 
 ### 5.6 1日単位のチャレンジ
 
-チャレンジは端末のローカル日付ごとに管理する。
+チャレンジは端末のローカル日付ごとに管理する。ただし1日の切り替わりは深夜0時ではなく**朝4時**とし、夜遅くに押した「できた！」を日付が変わったあとでも承認できるようにする。
 
 - 保護者が登録した行動はマスターとして翌日以降も残す
 - 子ども画面には、保護者が「表示」をオンにした行動だけを表示する
 - 行動の「表示」オン / オフは翌日以降もそのまま引き継ぎ、毎日設定し直す必要はない
+- 行動ごとに曜日を指定でき、指定した曜日だけ子ども画面に表示する
 - ごほうびと目標ポイントも前日の設定をそのまま引き継ぎ、翌日のチャレンジを自動的に開始する
-- 日付が変わったらポイントを自動的に0にリセットする
+- 朝4時を過ぎるとポイントを自動的に0にリセットする
 - 前日のポイントと承認待ちは翌日に引き継がない
 
 リセットは手動操作を要求せず、アプリの起動時・フォアグラウンド復帰時・日付変更時に自動で行う。
+
+### 5.7 承認モード
+
+既定では保護者の承認を必須とする。親モードの「アプリの設定」で承認を任意にでき、その場合は「できた！」を押した時点でポイントが入る。
+
+### 5.8 通知
+
+任意で以下のローカル通知を有効にできる。
+
+- 承認待ちの通知：申請から5分たっても承認されていない場合のみ通知する
+- 毎日のリマインド：指定した時刻に1回通知する
+
+### 5.9 連続達成
+
+目標に到達した日を記録し、連続で達成した日数を子ども画面と履歴に表示する。ごほうびを受け取っていなくても達成そのものは記録する。
 
 ---
 
@@ -407,6 +423,7 @@ Switch 30分
 - ポイント
 - 1日の上限回数
 - 表示する / しない（翌日以降も引き継ぐ）
+- 表示する曜日
 - 並び順
 
 例：
@@ -563,16 +580,38 @@ final class RewardGoal {
 @Model
 final class TaskItem {
     var id: UUID
+    var childID: UUID?
     var title: String
     var emoji: String
     var points: Int
     var dailyLimit: Int?
     var isEnabled: Bool
     var sortOrder: Int
+    var scheduledDate: Date?
+    var weekdayMask: Int
 }
 ```
 
-`dailyLimit == nil` は制限なし。
+`dailyLimit == nil` は制限なし。`weekdayMask` は日曜を最下位ビットとする7ビットで、表示する曜日を表す。`scheduledDate` はその行動が繰り越された日で、`isEnabled` と曜日から自動的に更新される。
+
+## DailyAchievement
+
+```swift
+@Model
+final class DailyAchievement {
+    var id: UUID
+    var childID: UUID?
+    var goalID: UUID?
+    var rewardTitle: String
+    var rewardEmoji: String
+    var earnedPoints: Int
+    var targetPoints: Int
+    var achievedOn: Date
+    var achievedAt: Date
+}
+```
+
+目標に到達した日を1日1件だけ記録する。連続達成日数と週次サマリーの集計に使う。
 
 ## CompletionRequest
 
