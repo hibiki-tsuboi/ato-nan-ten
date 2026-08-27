@@ -13,6 +13,7 @@ struct ChildrenSettingsView: View {
 
     @State private var editingChild: ChildProfile?
     @State private var childToDelete: ChildProfile?
+    @State private var showsSelectedChildNotice = false
     @State private var showsAddChild = false
 
     var body: some View {
@@ -45,16 +46,20 @@ struct ChildrenSettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        if children.count > 1 && child.id.uuidString != selectedChildID {
+                        if children.count > 1 {
                             Button("削除", role: .destructive) {
-                                childToDelete = child
+                                if child.id.uuidString == selectedChildID {
+                                    showsSelectedChildNotice = true
+                                } else {
+                                    childToDelete = child
+                                }
                             }
                         }
                     }
                 }
                 .onMove(perform: moveChildren)
             } footer: {
-                Text("子ども画面では、上部の名前をタップしてきょうだいを切り替えられます。現在表示中の子どもを削除する場合は、先に別の子どもへ切り替えてください。")
+                Text("子ども画面では、上部の名前をタップしてきょうだいを切り替えられます。いま表示している子どもは削除できないので、先に別の子どもへ切り替えてください。")
             }
 
             Section {
@@ -91,11 +96,17 @@ struct ChildrenSettingsView: View {
             Button("キャンセル", role: .cancel) { childToDelete = nil }
             Button("削除", role: .destructive) {
                 if let childToDelete {
+                    self.childToDelete = nil
                     deleteChild(childToDelete)
                 }
             }
         } message: {
             Text("この子どものポイント、行動、申請、履歴がすべて削除されます。この操作は元に戻せません。")
+        }
+        .alert("いま表示している子どもは削除できません", isPresented: $showsSelectedChildNotice) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("子ども画面の上部で別の子どもに切り替えてから、もう一度お試しください。")
         }
     }
 
@@ -118,11 +129,6 @@ struct ChildrenSettingsView: View {
         redemptions.filter { $0.childID == child.id }.forEach(modelContext.delete)
         modelContext.delete(child)
 
-        if selectedChildID == child.id.uuidString,
-           let replacement = children.first(where: { $0.id != child.id }) {
-            selectedChildID = replacement.id.uuidString
-        }
-        childToDelete = nil
         try? modelContext.save()
     }
 }

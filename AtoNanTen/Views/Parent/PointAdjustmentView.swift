@@ -51,7 +51,6 @@ struct PointAdjustmentView: View {
                         .frame(maxWidth: .infinity)
                     }
                 }
-                .buttonStyle(.borderless)
             }
 
             Section("メモ（任意）") {

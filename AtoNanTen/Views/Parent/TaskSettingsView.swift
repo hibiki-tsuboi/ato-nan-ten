@@ -14,6 +14,10 @@ struct TaskSettingsView: View {
         tasks.filter { $0.childID == child.id }
     }
 
+    private var nextSortOrder: Int {
+        (childTasks.map(\.sortOrder).max() ?? -1) + 1
+    }
+
     var body: some View {
         List {
             Section {
@@ -76,7 +80,7 @@ struct TaskSettingsView: View {
                 TaskEditorView(
                     childID: child.id,
                     task: nil,
-                    suggestedSortOrder: childTasks.count,
+                    suggestedSortOrder: nextSortOrder,
                     date: date
                 )
             }

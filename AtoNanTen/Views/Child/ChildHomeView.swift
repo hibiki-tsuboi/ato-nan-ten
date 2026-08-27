@@ -57,7 +57,10 @@ struct ChildHomeView: View {
             ScrollView {
                 VStack(spacing: 18) {
                     header
-                    childSwitcher
+
+                    if siblings.count > 1 {
+                        childSwitcher
+                    }
 
                     if isConfiguredToday {
                         progressCard
