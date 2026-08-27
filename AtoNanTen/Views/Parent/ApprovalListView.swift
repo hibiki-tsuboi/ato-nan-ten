@@ -79,6 +79,7 @@ struct ApprovalListView: View {
     private func approve(_ request: CompletionRequest) {
         try? PointService.approve(request, goal: goal, in: modelContext)
         approvalCount += 1
+        SoundService.play(.complete)
     }
 
     private func reject(_ request: CompletionRequest) {

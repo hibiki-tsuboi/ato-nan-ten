@@ -414,6 +414,7 @@ struct ChildHomeView: View {
         }
 
         completionCount += 1
+        SoundService.play(.complete)
     }
 
     private func openParentMode() {

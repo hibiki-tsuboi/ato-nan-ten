@@ -7,6 +7,7 @@ struct AppSettingsView: View {
     @AppStorage(AppSettings.Key.dailyReminderHour) private var dailyReminderHour = AppSettings.defaultReminderHour
     @AppStorage("isResettingData") private var isResettingData = false
     @AppStorage(AppSettings.Key.colorScheme) private var colorSchemeOption = AppColorSchemeOption.system
+    @AppStorage(AppSettings.Key.soundEnabled) private var isSoundEnabled = true
 
     @State private var showsResetConfirmation = false
     @State private var notificationMessage: String?
@@ -24,6 +25,14 @@ struct AppSettingsView: View {
                 Text("見た目")
             } footer: {
                 Text("「自動」は端末の設定に合わせて、明るい場所ではライト、暗い場所ではダークになります。")
+            }
+
+            Section {
+                Toggle("音を鳴らす", isOn: $isSoundEnabled)
+            } header: {
+                Text("音")
+            } footer: {
+                Text("「できた！」と目標達成のときに鳴ります。本体のサイレントスイッチがオンのときは鳴りません。")
             }
 
             Section {

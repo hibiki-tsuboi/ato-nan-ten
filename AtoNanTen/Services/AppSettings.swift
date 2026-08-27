@@ -32,6 +32,7 @@ enum AppSettings {
         static let dailyReminder = "dailyReminderEnabled"
         static let dailyReminderHour = "dailyReminderHour"
         static let colorScheme = "appColorScheme"
+        static let soundEnabled = "soundEnabled"
     }
 
     static let defaultReminderHour = 19
@@ -40,6 +41,12 @@ enum AppSettings {
     static var requiresApproval: Bool {
         guard UserDefaults.standard.object(forKey: Key.requiresApproval) != nil else { return true }
         return UserDefaults.standard.bool(forKey: Key.requiresApproval)
+    }
+
+    /// 未設定のときは音ありをデフォルトにする
+    static var isSoundEnabled: Bool {
+        guard UserDefaults.standard.object(forKey: Key.soundEnabled) != nil else { return true }
+        return UserDefaults.standard.bool(forKey: Key.soundEnabled)
     }
 
     static var isPendingNotificationEnabled: Bool {

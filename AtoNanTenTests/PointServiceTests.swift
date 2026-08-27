@@ -1,3 +1,4 @@
+import AudioToolbox
 import Foundation
 import SwiftData
 import Testing
@@ -514,6 +515,19 @@ struct PointServiceTests {
         #expect(requests.first?.status == .approved)
         let histories = try context.fetch(FetchDescriptor<PointHistory>())
         #expect(histories.count == 1)
+    }
+
+    @Test
+    func soundFilesAreBundledAndLoadable() throws {
+        for sound in [AppSound.complete, AppSound.celebrate] {
+            let url = try #require(
+                Bundle.main.url(forResource: sound.rawValue, withExtension: "wav"),
+                "\(sound.rawValue).wav がアプリのバンドルに入っていません"
+            )
+            var soundID: SystemSoundID = 0
+            #expect(AudioServicesCreateSystemSoundID(url as CFURL, &soundID) == kAudioServicesNoError)
+            AudioServicesDisposeSystemSoundID(soundID)
+        }
     }
 
     private func utcCalendar() -> Calendar {

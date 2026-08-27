@@ -78,6 +78,7 @@ struct RewardAchievedView: View {
         }
         .sensoryFeedback(.success, trigger: animate)
         .task {
+            SoundService.play(.celebrate)
             withAnimation(.spring(response: 0.55, dampingFraction: 0.55).repeatCount(2, autoreverses: true)) {
                 animate = true
             }
