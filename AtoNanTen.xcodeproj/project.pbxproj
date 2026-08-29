@@ -138,11 +138,12 @@
 				};
 			};
 			buildConfigurationList = B6B2451D303AEE2E00DE8E7E /* Build configuration list for PBXProject "AtoNanTen" */;
-			developmentRegion = en;
+			developmentRegion = ja;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				ja,
 			);
 			mainGroup = B6B24519303AEE2E00DE8E7E;
 			minimizedProjectReferenceProxies = 1;
