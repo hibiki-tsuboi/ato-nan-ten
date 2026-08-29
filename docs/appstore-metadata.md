@@ -140,3 +140,128 @@
 ```
 はじめてのリリースです。おてつだいや宿題でポイントをためて、ごほうびを目指しましょう。
 ```
+
+---
+
+# App Review に関する情報
+
+## 連絡先・サインイン
+
+| 項目 | 値 |
+| --- | --- |
+| サインインが必要 | **いいえ**（アカウント登録もログインもない） |
+| 連絡先情報 | 氏名・電話番号・メールアドレス（審査中に連絡が取れるもの） |
+| 添付ファイル | 親モードを開くところまでの操作動画 |
+
+## メモ（英語）
+
+```
+Thank you for reviewing.
+
+This is a reward-points app for families. A child taps "done" on chores or homework,
+a parent approves it, and the points add up toward a reward.
+
+== HOW TO OPEN PARENT MODE (please read first) ==
+
+Most of the app's functionality lives in Parent Mode, which is intentionally hidden
+so that children cannot change the rules by themselves.
+
+1. On the child's home screen, press and HOLD the person icon at the TOP RIGHT for
+   1 second. A short tap does nothing by design.
+2. Authenticate with Face ID / Touch ID / the device passcode.
+3. If the test device has no biometrics enrolled and no device passcode set, the app
+   falls back to its own 4-digit passcode screen. On first use it asks you to choose
+   and confirm any 4-digit code (for example 1234) and then reuses it.
+
+There is no demo account and no login, because the app has no server and no user
+accounts. All data is stored on the device only.
+
+== FIRST LAUNCH ==
+
+A short setup flow appears (reward -> tasks -> done), then the child's home screen.
+
+== MAIN FLOW TO TRY ==
+
+1. On the child's home screen, tap the orange "できた！" (done) button on a task card.
+   The card changes to "かくにんまち" (waiting for approval). Points do NOT increase yet.
+2. Open Parent Mode -> "承認待ちを確認" (review pending) -> approve. The points increase.
+3. When the points reach the goal, a celebration screen appears. Tapping
+   "ごほうびをもらった" (reward received) resets the points to 0 and, if the reward name
+   contains a duration such as "ゲーム 30ぷん" (30 minutes), starts a countdown timer.
+
+Approval can be switched off in Parent Mode -> "アプリの設定", in which case points are
+added the moment the child taps the button.
+
+== OTHER NOTES ==
+
+- Notifications are optional. The permission prompt is only shown when the parent turns
+  them on in Parent Mode -> "アプリの設定". Nothing is requested at launch.
+- No ads, no third-party analytics, no tracking, no in-app purchases, no external links,
+  no user-generated content shared with anyone.
+- The app's "day" starts at 4:00 AM local time instead of midnight, so the daily points
+  and pending approvals reset at 4:00 AM. This is intentional, so that a "done" tapped
+  late at night can still be approved by a parent afterwards.
+- Available on iPhone and iPad. iPhone is portrait only; iPad supports all orientations.
+- The UI is Japanese only.
+
+A screen recording that shows the Parent Mode unlock is attached.
+```
+
+## メモ（日本語・控え）
+
+```
+ご確認ありがとうございます。
+
+家庭向けのごほうびポイント管理アプリです。子どもがお手伝いや宿題の「できた！」を押し、
+親が承認するとポイントがたまり、目標に届くとごほうびがもらえます。
+
+■ 親モードの開き方（最初にご確認ください）
+
+機能の大半は親モードにあります。子どもが勝手にルールを変えられないよう、意図的に
+入口を隠しています。
+
+1. 子ども画面の右上にある人物アイコンを「1秒長押し」します。短いタップでは反応しません。
+2. Face ID / Touch ID / 端末のパスコードで認証します。
+3. 生体認証も端末パスコードも設定されていない端末では、アプリ内の4桁パスコード画面に
+   切り替わります。初回は任意の4桁（例：1234）を登録する流れになります。
+
+サーバーもアカウントも持たないため、デモアカウントはありません。データはすべて端末内
+にのみ保存されます。
+
+■ 初回起動
+
+セットアップ（ごほうび → 行動 → 完了）のあと、子ども画面が表示されます。
+
+■ 主な操作
+
+1. 子ども画面で行動カードの「できた！」を押す → 「かくにんまち」になり、ポイントはまだ
+   増えません。
+2. 親モード →「承認待ちを確認」→ 承認するとポイントが増えます。
+3. 目標に届くとお祝い画面が出ます。「ごほうびをもらった」を押すとポイントが0に戻り、
+   ごほうび名に「ゲーム 30ぷん」のように時間が含まれていればタイマーが始まります。
+
+承認は親モード →「アプリの設定」でオフにでき、その場合は押した時点で加点されます。
+
+■ そのほか
+
+- 通知は任意です。親モード →「アプリの設定」でオンにしたときだけ許可を求めます。
+  起動時には何も出ません。
+- 広告・解析・トラッキング・アプリ内課金・外部リンクはありません。
+- 「1日」は深夜0時ではなく朝4時に切り替わります。夜遅くに押した「できた！」を、
+  日付が変わったあとでも親が承認できるようにするためです。
+- iPhone / iPad 対応。iPhone は縦向きのみ、iPad は全方向。
+- 表示は日本語のみです。
+
+親モードを開くところまでの操作動画を添付しています。
+```
+
+## 添付する操作動画
+
+40〜60秒の画面収録を1本。ねらいは「審査員が親モードに入れずに詰まる」のを防ぐこと。
+
+1. 子ども画面 → 右上のアイコンを1秒長押し → 認証 → 親モードが開く（ここが最重要）
+2. 「できた！」→「かくにんまち」→ 親モードで承認 → ポイントが増える
+3. 目標達成 →「ごほうびをもらった」→ タイマーが始まる
+
+実機の画面収録（.mp4 / .mov）でよい。添付ファイルにはサイズ上限があるため、収まらない
+場合は限定公開の動画URLをメモ本文に書く方法もある。
