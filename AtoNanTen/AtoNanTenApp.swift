@@ -12,7 +12,12 @@ import SwiftUI
 struct AtoNanTenApp: App {
     var body: some Scene {
         WindowGroup {
+            #if DEBUG
+            // 起動引数 -demoScene があるときだけスクリーンショット用の画面に差し替わる
+            DemoScreenshotRoot()
+            #else
             ContentView()
+            #endif
         }
         .modelContainer(for: [
             ChildProfile.self,
