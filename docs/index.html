@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ごほうびプラス</title>
+<meta name="description" content="子ども向けのごほうびポイント管理アプリ「ごほうびプラス」。あと何点でごほうびかが、ひと目で分かる。">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fdfaf3;
+    --panel: #ffffff;
+    --text: #2c2a26;
+    --muted: #6b665e;
+    --line: #e8e1d3;
+    --accent: #f0a020;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17161a;
+      --panel: #201f24;
+      --text: #ece9e3;
+      --muted: #a29d95;
+      --line: #34323a;
+      --accent: #ffc25c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 20px 64px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    line-height: 1.9;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  header { padding: 64px 0 24px; text-align: center; }
+  h1 { font-size: 32px; margin: 0 0 8px; }
+  .tagline { color: var(--muted); margin: 0; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    margin: 32px 0;
+    text-align: center;
+  }
+  .stars { font-size: 24px; letter-spacing: 6px; margin: 8px 0; }
+  .remain { font-size: 22px; font-weight: 700; }
+  .score { color: var(--muted); }
+  h2 {
+    font-size: 19px;
+    margin: 40px 0 12px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+    line-height: 1.5;
+  }
+  ul { padding-left: 1.3em; }
+  li { margin-bottom: 6px; }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent); }
+  a:hover { text-decoration-thickness: 2px; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ごほうびプラス</h1>
+    <p class="tagline">あと何点でごほうびかが、ひと目で分かる</p>
+  </header>
+
+  <div class="card">
+    <p class="remain">⭐️ あと 2てん！ ⭐️</p>
+    <p class="stars">⭐️ ⭐️ ⭐️ ☆ ☆</p>
+    <p class="score">3 / 5 てん　🎮 Switch 30ぷん</p>
+  </div>
+
+  <p>「宿題」「読書」「お手伝い」などができたらポイントがたまり、目標ポイントに到達するとごほうびを獲得できる、子ども向けのごほうびポイント管理アプリです。紙で運用していた「5点たまったらごほうび」の仕組みを、子ども自身が使える形にしました。</p>
+
+  <h2>できること</h2>
+  <ul>
+    <li>「できた！」を押すと承認待ちになり、親モードで承認するとポイントが加算されます</li>
+    <li>星やゲージで「あと○てん」を大きく表示します</li>
+    <li>行動、ごほうび、目標ポイント、1日の上限、表示する曜日を親モードで設定できます</li>
+    <li>ごほうびタイマー、連続達成日数、履歴に対応しています</li>
+    <li>きょうだいで使えるよう、子どもを複数登録できます</li>
+  </ul>
+
+  <h2>プライバシー</h2>
+  <p>データはすべて端末内に保存され、外部には送信されません。詳しくは <a href="privacy/">プライバシーポリシー</a> をご覧ください。</p>
+
+  <h2>お問い合わせ</h2>
+  <p>メール: <a href="mailto:hibiki.tsuboi@cotegg.com">hibiki.tsuboi@cotegg.com</a></p>
+
+  <footer>
+    <p><a href="privacy/">プライバシーポリシー</a> ・ <a href="https://github.com/hibiki-tsuboi/ato-nan-ten">GitHub リポジトリ</a></p>
+  </footer>
+</main>
+</body>
+</html>
