@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>プライバシーポリシー | ごほうびプラス</title>
+<meta name="description" content="iOSアプリ「ごほうびプラス」のプライバシーポリシー。データはすべて端末内に保存され、外部に送信されません。">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fdfaf3;
+    --panel: #ffffff;
+    --text: #2c2a26;
+    --muted: #6b665e;
+    --line: #e8e1d3;
+    --accent: #f0a020;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17161a;
+      --panel: #201f24;
+      --text: #ece9e3;
+      --muted: #a29d95;
+      --line: #34323a;
+      --accent: #ffc25c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 20px 64px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    line-height: 1.9;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  header { padding: 48px 0 8px; border-bottom: 2px solid var(--line); margin-bottom: 32px; }
+  .eyebrow { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+  h1 { font-size: 28px; line-height: 1.4; margin: 0 0 16px; }
+  h2 {
+    font-size: 19px;
+    margin: 40px 0 12px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+    line-height: 1.5;
+  }
+  p, li { color: var(--text); }
+  ul { padding-left: 1.3em; }
+  li { margin-bottom: 6px; }
+  a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--accent); }
+  a:hover { text-decoration-thickness: 2px; }
+  .meta { color: var(--muted); font-size: 14px; margin: 0 0 4px; }
+  .lead {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin: 0 0 8px;
+  }
+  .table-wrap { overflow-x: auto; margin: 16px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 480px; font-size: 15px; background: var(--panel); }
+  th, td { border: 1px solid var(--line); padding: 10px 12px; text-align: left; vertical-align: top; line-height: 1.7; }
+  th { background: color-mix(in srgb, var(--accent) 12%, var(--panel)); white-space: nowrap; font-weight: 600; }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">ごほうびプラス（あとなんてん？）</p>
+    <h1>プライバシーポリシー</h1>
+    <p class="meta">最終更新日: 2026年8月29日</p>
+  </header>
+
+  <p class="lead">本アプリは、入力されたデータをすべて<strong>お使いの端末の中だけ</strong>に保存します。サーバーへ送信する機能を持たず、開発者がデータを受け取ったり閲覧したりすることはありません。アカウント登録もログインも不要です。</p>
+
+  <h2>1. 基本方針</h2>
+  <p>iOSアプリ「ごほうびプラス」（以下「本アプリ」）は、子どものごほうびポイントを家庭内で管理するためのアプリです。本アプリはネットワーク通信を行わず、すべての処理と保存を端末内で完結させます。</p>
+
+  <h2>2. 端末内に保存される情報</h2>
+  <p>本アプリは、次の情報を端末内（SwiftData / UserDefaults）に保存します。</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>種類</th><th>内容</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>子どもの情報</td><td>名前（ニックネームでもかまいません）、アイコンの絵文字</td></tr>
+        <tr><td>行動（やること）</td><td>名前、絵文字、ポイント、1日の上限、表示する曜日、並び順、表示 / 非表示</td></tr>
+        <tr><td>ごほうび</td><td>名前、絵文字、目標ポイント、ごほうびタイマーの残り時間</td></tr>
+        <tr><td>ポイントの記録</td><td>現在のポイント、承認待ちの申請、ポイント履歴、達成記録、ごほうびの受け取り記録とその日時</td></tr>
+        <tr><td>アプリの設定</td><td>承認の要否、通知の有無と時刻、見た目（ライト / ダーク）、効果音の有無</td></tr>
+        <tr><td>親モードのパスコード</td><td>4桁のパスコードは、そのままではなく SHA-256 でハッシュ化した値のみを保存します</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>これらは端末外へ送信されません。</p>
+
+  <h2>3. 取得しない情報</h2>
+  <p>本アプリは次の情報を取得しません。</p>
+  <ul>
+    <li>氏名・住所・電話番号・メールアドレスなど、個人を特定する情報の入力を求めません</li>
+    <li>位置情報、連絡先、写真、カメラ、マイク、ヘルスケアデータ</li>
+    <li>広告識別子（IDFA）その他のトラッキング用の識別子</li>
+    <li>利用状況の分析データ（アクセス解析）、独自のクラッシュログ</li>
+  </ul>
+  <p>広告の表示、アプリ内課金、第三者製の SDK・解析ツールの組み込みはいずれもありません。</p>
+
+  <h2>4. 外部への送信</h2>
+  <p>本アプリはネットワーク通信を行いません。したがって、入力された情報が外部のサーバーや第三者へ送信されることはありません。</p>
+
+  <h2>5. Face ID・端末のパスコードについて</h2>
+  <p>親モードを開くときに、iOS の認証（Face ID / Touch ID / 端末のパスコード）を利用します。本アプリが受け取るのは<strong>認証に成功したかどうかの結果だけ</strong>です。顔や指紋のデータは iOS が管理しており、本アプリから参照することはできません。</p>
+  <p>生体認証も端末のパスコードも利用できない場合に備えて、本アプリ内の4桁パスコードを登録できます。これは前述のとおりハッシュ化して端末内に保存します。</p>
+
+  <h2>6. 通知について</h2>
+  <p>通知はすべて端末内で作成・表示される<strong>ローカル通知</strong>です。承認待ちのお知らせや毎日のリマインドに、子どもの名前や行動の名前を含めることがありますが、これらも端末の外には出ません。通知の許可は任意で、iOS の「設定」からいつでも変更できます。</p>
+
+  <h2>7. バックアップについて</h2>
+  <p>端末で iCloud バックアップやパソコンへのバックアップを有効にしている場合、iOS の仕組みによって本アプリのデータもバックアップに含まれることがあります。バックアップの保存や管理は Apple のサービスによるもので、その取り扱いは <a href="https://www.apple.com/legal/privacy/ja/">Apple のプライバシーポリシー</a> に従います。</p>
+
+  <h2>8. お子さまの情報について</h2>
+  <p>本アプリは子どもが使うことを想定していますが、前述のとおり情報を外部に送信しないため、開発者が子どもの情報を収集・保有することはありません。名前はニックネームでの登録もできます。行動やごほうびの内容の設定、データの管理は保護者の方が行ってください。</p>
+
+  <h2>9. データの削除</h2>
+  <ul>
+    <li>特定の子どもの記録を消す: 親モード →「子どもの管理」→ 対象の子どもを削除</li>
+    <li>すべての記録を消す: 親モード →「アプリの設定」→「すべてのデータを削除」</li>
+    <li>端末から本アプリを削除すると、端末内のデータもあわせて削除されます</li>
+  </ul>
+  <p>開発者側でデータを保管していないため、削除のご依頼をいただく必要はありません。</p>
+
+  <h2>10. 第三者への提供</h2>
+  <p>本アプリは利用者の情報を保有しないため、第三者へ提供・販売することはありません。</p>
+
+  <h2>11. 本ポリシーの変更</h2>
+  <p>内容を変更する場合は、このページを更新します。重要な変更があるときは、アプリのアップデート情報でもお知らせします。</p>
+
+  <h2>12. お問い合わせ</h2>
+  <p>本ポリシーや本アプリについてのお問い合わせは、次の連絡先までお願いします。</p>
+  <ul>
+    <li>メール: <a href="mailto:hibiki.tsuboi@cotegg.com">hibiki.tsuboi@cotegg.com</a></li>
+  </ul>
+
+  <footer>
+    <p><a href="../">ごほうびプラスについて</a> ・ <a href="https://github.com/hibiki-tsuboi/ato-nan-ten">GitHub リポジトリ</a></p>
+  </footer>
+</main>
+</body>
+</html>

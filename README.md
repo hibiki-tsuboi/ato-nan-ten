@@ -136,6 +136,7 @@ AtoNanTen/
 
 - [reward-points-app-spec.md](reward-points-app-spec.md) — 仕様書（画面構成、データモデル、エッジケース、将来候補）
 - [AGENTS.md](AGENTS.md) — コーディング規約とコントリビュート時の指針
+- [PRIVACY.md](PRIVACY.md) — プライバシーポリシー（公開ページ: https://hibiki-tsuboi.github.io/ato-nan-ten/privacy/ ）
 
 ## 未実装 / 将来候補
 
