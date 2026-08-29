@@ -1,16 +1,80 @@
 {
   "artboards": [
-    { "file": "Main.dc.html", "title": "01 ホーム", "x": 0, "y": 0, "w": 1320, "h": 2868 },
-    { "file": "Achievement.dc.html", "title": "02 達成", "x": 1480, "y": 0, "w": 1320, "h": 2868 },
-    { "file": "Approval.dc.html", "title": "03 承認", "x": 2960, "y": 0, "w": 1320, "h": 2868 },
-    { "file": "Tasks.dc.html", "title": "04 行動の設定", "x": 4440, "y": 0, "w": 1320, "h": 2868 },
-    { "file": "Timer.dc.html", "title": "05 タイマー", "x": 0, "y": 3108, "w": 1320, "h": 2868 },
-    { "file": "Siblings.dc.html", "title": "06 きょうだい", "x": 1480, "y": 3108, "w": 1320, "h": 2868 },
-    { "file": "History.dc.html", "title": "07 履歴", "x": 2960, "y": 3108, "w": 1320, "h": 2868 },
-    { "file": "ParentMode.dc.html", "title": "08 親モード", "x": 4440, "y": 3108, "w": 1320, "h": 2868 }
+    {
+      "file": "Main.dc.html",
+      "title": "01 ホーム",
+      "x": 0,
+      "y": 0,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "Achievement.dc.html",
+      "title": "02 達成",
+      "x": 1402,
+      "y": 0,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "Approval.dc.html",
+      "title": "03 承認",
+      "x": 2804,
+      "y": 0,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "Tasks.dc.html",
+      "title": "04 行動の設定",
+      "x": 4206,
+      "y": 0,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "Timer.dc.html",
+      "title": "05 タイマー",
+      "x": 0,
+      "y": 2928,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "Siblings.dc.html",
+      "title": "06 きょうだい",
+      "x": 1402,
+      "y": 2928,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "History.dc.html",
+      "title": "07 履歴",
+      "x": 2804,
+      "y": 2928,
+      "w": 1242,
+      "h": 2688
+    },
+    {
+      "file": "ParentMode.dc.html",
+      "title": "08 親モード",
+      "x": 4206,
+      "y": 2928,
+      "w": 1242,
+      "h": 2688
+    }
   ],
   "annotations": [
-    { "id": "deliverable", "x": 0, "y": -360, "w": 1100, "text": "App Store 提出用のプレビュー 8枚（1320 × 2868 px / iPhone 6.9インチ）。\n左上から順に、この並びで提出します。" }
+    {
+      "id": "deliverable",
+      "x": 0,
+      "y": -360,
+      "w": 1100,
+      "text": "App Store 提出用のプレビュー 8枚（1242 × 2688 px / iPhone 6.5インチ）。\n左上から順に、この並びで提出します。"
+    }
   ],
-  "launch": { "view": "canvas" }
+  "launch": {
+    "view": "canvas"
+  }
 }

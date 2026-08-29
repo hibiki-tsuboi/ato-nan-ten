@@ -3,7 +3,7 @@
 
 source/*.dc.html（Claude Design のアートボード）を読み、埋め込み用の圧縮画像を
 docs/screenshots/ のフル解像度 PNG に差し替えた renders.html を作る。
-あとはブラウザで 1320 × 2868 の要素ごとにスクリーンショットを撮れば提出用の画像になる。
+あとはブラウザで 1242 × 2688 の要素ごとにスクリーンショットを撮れば提出用の画像になる。
 
     python3 docs/previews/build.py
     (cd docs/previews && python3 -m http.server 8731)
@@ -40,7 +40,7 @@ page = """<!doctype html>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800&display=swap">
 <style>
   html, body { margin: 0; padding: 0; background: #fff; }
-  section { display: block; width: 1320px; height: 2868px; overflow: hidden; }
+  section { display: block; width: 1242px; height: 2688px; overflow: hidden; }
 </style>
 </head>
 <body>

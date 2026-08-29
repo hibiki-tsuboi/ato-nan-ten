@@ -1,7 +1,8 @@
 # App Store 用プレビュー画像
 
 `docs/screenshots/` の素のスクリーンショットに、キャッチコピーと背景を入れた提出用の画像。
-1320 × 2868 px（iPhone 6.9インチ）で、App Store Connect にそのまま入る。
+1242 × 2688 px（iPhone 6.5インチ）で、App Store Connect にそのまま入る。
+アートボードは 1320 幅で設計し、出力時に 0.941 倍で組み直している（`source/` の値は縮小後）。
 
 | ファイル | コピー |
 | --- | --- |
@@ -36,5 +37,5 @@ cd docs/previews && python3 -m http.server 8731
 ```
 
 `http://127.0.0.1:8731/renders.html` を開き、`#s1`〜`#s8` の各 `<section>` を**等倍（1x）**で
-要素キャプチャすると 1320 × 2868 の PNG になる。ページ全体ではなく要素ごとに撮ること。
+要素キャプチャすると 1242 × 2688 の PNG になる。ページ全体ではなく要素ごとに撮ること。
 スクリーンショット自体を撮り直す手順は [../screenshots/README.md](../screenshots/README.md)。
