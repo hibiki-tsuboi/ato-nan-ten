@@ -1,0 +1,16 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "01 ホーム", "x": 0, "y": 0, "w": 1320, "h": 2868 },
+    { "file": "Achievement.dc.html", "title": "02 達成", "x": 1480, "y": 0, "w": 1320, "h": 2868 },
+    { "file": "Approval.dc.html", "title": "03 承認", "x": 2960, "y": 0, "w": 1320, "h": 2868 },
+    { "file": "Tasks.dc.html", "title": "04 行動の設定", "x": 4440, "y": 0, "w": 1320, "h": 2868 },
+    { "file": "Timer.dc.html", "title": "05 タイマー", "x": 0, "y": 3108, "w": 1320, "h": 2868 },
+    { "file": "Siblings.dc.html", "title": "06 きょうだい", "x": 1480, "y": 3108, "w": 1320, "h": 2868 },
+    { "file": "History.dc.html", "title": "07 履歴", "x": 2960, "y": 3108, "w": 1320, "h": 2868 },
+    { "file": "ParentMode.dc.html", "title": "08 親モード", "x": 4440, "y": 3108, "w": 1320, "h": 2868 }
+  ],
+  "annotations": [
+    { "id": "deliverable", "x": 0, "y": -360, "w": 1100, "text": "App Store 提出用のプレビュー 8枚（1320 × 2868 px / iPhone 6.9インチ）。\n左上から順に、この並びで提出します。" }
+  ],
+  "launch": { "view": "canvas" }
+}

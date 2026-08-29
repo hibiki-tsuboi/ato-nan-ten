@@ -20,3 +20,6 @@ Packages/
 
 # JetBrains IDE
 .idea/
+
+# 組み立て用の中間ファイル
+docs/previews/renders.html
