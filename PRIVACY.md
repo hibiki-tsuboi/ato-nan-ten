@@ -77,4 +77,4 @@
 
 本ポリシーや本アプリについてのお問い合わせは、次の連絡先までお願いします。
 
-- メール: hibiki.tsuboi@cotegg.com
+- メール: hibiki.tsuboi@icloud.com

@@ -17,3 +17,6 @@ build/
 # Swift Package Manager
 .build/
 Packages/
+
+# JetBrains IDE
+.idea/
