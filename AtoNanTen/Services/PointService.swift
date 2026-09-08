@@ -15,11 +15,7 @@ enum PointService {
         on date: Date = .now,
         calendar: Calendar = .current
     ) -> CompletionAvailability {
-        let relevantRequests = requests.filter {
-            $0.taskID == task.id &&
-                AppDay.isSameDay($0.requestedAt, date, calendar: calendar) &&
-                $0.status != .rejected
-        }
+        let relevantRequests = todaysRequests(for: task, requests: requests, on: date, calendar: calendar)
 
         if relevantRequests.contains(where: { $0.status == .pending }) {
             return .pending
@@ -28,6 +24,33 @@ enum PointService {
             return .limitReached
         }
         return .available
+    }
+
+    /// その日にあと何回できるか。上限なしの行動は nil を返す。
+    /// 確認待ちの申請も消費済みとして数える。
+    static func remainingCount(
+        for task: TaskItem,
+        requests: [CompletionRequest],
+        on date: Date = .now,
+        calendar: Calendar = .current
+    ) -> Int? {
+        guard let dailyLimit = task.dailyLimit else { return nil }
+        let used = todaysRequests(for: task, requests: requests, on: date, calendar: calendar).count
+        return max(dailyLimit - used, 0)
+    }
+
+    /// その日に有効な申請（却下ぶんは数えない）。
+    private static func todaysRequests(
+        for task: TaskItem,
+        requests: [CompletionRequest],
+        on date: Date,
+        calendar: Calendar
+    ) -> [CompletionRequest] {
+        requests.filter {
+            $0.taskID == task.id &&
+                AppDay.isSameDay($0.requestedAt, date, calendar: calendar) &&
+                $0.status != .rejected
+        }
     }
 
     @discardableResult

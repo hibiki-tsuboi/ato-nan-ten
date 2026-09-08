@@ -113,7 +113,11 @@ struct ChildHomeView: View {
                                     .foregroundStyle(AppTheme.ink)
 
                                 ForEach(todayTasks) { task in
-                                    TaskCardView(task: task, availability: availability(for: task)) {
+                                    TaskCardView(
+                                        task: task,
+                                        availability: availability(for: task),
+                                        remainingCount: remainingCount(for: task)
+                                    ) {
                                         requestCompletion(for: task)
                                     }
                                 }
@@ -406,6 +410,10 @@ struct ChildHomeView: View {
 
     private func availability(for task: TaskItem) -> CompletionAvailability {
         PointService.availability(for: task, requests: childRequests, on: date)
+    }
+
+    private func remainingCount(for task: TaskItem) -> Int? {
+        PointService.remainingCount(for: task, requests: childRequests, on: date)
     }
 
     private func requestCompletion(for task: TaskItem) {

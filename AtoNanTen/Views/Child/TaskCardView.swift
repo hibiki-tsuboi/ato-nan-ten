@@ -3,6 +3,8 @@ import SwiftUI
 struct TaskCardView: View {
     let task: TaskItem
     let availability: CompletionAvailability
+    /// きょうあと何回できるか。上限なしの行動は nil。
+    let remainingCount: Int?
     let action: () -> Void
 
     var body: some View {
@@ -22,11 +24,11 @@ struct TaskCardView: View {
                 ViewThatFits(in: .horizontal) {
                     HStack(spacing: 7) {
                         pointsLabel
-                        unlimitedBadge
+                        countBadge
                     }
                     VStack(alignment: .leading, spacing: 5) {
                         pointsLabel
-                        unlimitedBadge
+                        countBadge
                     }
                 }
             }
@@ -62,12 +64,12 @@ struct TaskCardView: View {
             .lineLimit(1)
     }
 
-    /// 回数制限のない行動だけ、何回でもできることを添える。
-    /// 上限のあるものは「できた！」→「きょうはOK」の変化で分かるため出さない。
+    /// 上限なしなら「なんかいでも」、上限つきなら残りの回数を添える。
+    /// 残り0回は「きょうはOK」ボタンで分かるため出さない。
     @ViewBuilder
-    private var unlimitedBadge: some View {
-        if task.dailyLimit == nil {
-            Text("なんかいでも")
+    private var countBadge: some View {
+        if let text = countBadgeText {
+            Text(text)
                 .font(.caption.weight(.heavy))
                 .foregroundStyle(AppTheme.ink.opacity(0.55))
                 .lineLimit(1)
@@ -75,8 +77,13 @@ struct TaskCardView: View {
                 .padding(.horizontal, 9)
                 .padding(.vertical, 3)
                 .background(AppTheme.ink.opacity(0.08), in: Capsule())
-                .accessibilityLabel("なんかいでもできます")
+                .accessibilityLabel("\(text)できます")
         }
+    }
+
+    private var countBadgeText: String? {
+        guard let remainingCount else { return "なんかいでも" }
+        return remainingCount > 0 ? "あと\(remainingCount)かい" : nil
     }
 
     private var buttonTitle: String {
@@ -106,4 +113,26 @@ struct TaskCardView: View {
         case .limitReached: AppTheme.mint.opacity(0.25)
         }
     }
+}
+
+#Preview {
+    VStack(spacing: 14) {
+        TaskCardView(
+            task: TaskItem(title: "はみがき", emoji: "🪥", points: 3, dailyLimit: 2),
+            availability: .available,
+            remainingCount: 2
+        ) {}
+        TaskCardView(
+            task: TaskItem(title: "おてつだい", emoji: "🧹", points: 5, dailyLimit: nil),
+            availability: .available,
+            remainingCount: nil
+        ) {}
+        TaskCardView(
+            task: TaskItem(title: "しゅくだい", emoji: "📚", points: 5, dailyLimit: 1),
+            availability: .limitReached,
+            remainingCount: 0
+        ) {}
+    }
+    .padding()
+    .background(AppTheme.background)
 }

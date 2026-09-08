@@ -37,6 +37,85 @@ struct PointServiceTests {
     }
 
     @Test
+    func remainingCountCountsPendingAndApprovedRequests() {
+        let task = TaskItem(title: "おてつだい", emoji: "🧹", points: 1, dailyLimit: 3)
+        let pending = CompletionRequest(
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points
+        )
+        let approved = CompletionRequest(
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points,
+            status: .approved
+        )
+        let rejected = CompletionRequest(
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points,
+            status: .rejected
+        )
+
+        #expect(PointService.remainingCount(for: task, requests: []) == 3)
+        #expect(PointService.remainingCount(for: task, requests: [approved, rejected]) == 2)
+        #expect(PointService.remainingCount(for: task, requests: [approved, pending]) == 1)
+    }
+
+    @Test
+    func remainingCountIsNilWithoutDailyLimit() {
+        let task = TaskItem(title: "おてつだい", emoji: "🧹", points: 1, dailyLimit: nil)
+        let approved = CompletionRequest(
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points,
+            status: .approved
+        )
+
+        #expect(PointService.remainingCount(for: task, requests: [approved]) == nil)
+    }
+
+    @Test
+    func remainingCountResetsOnTheNextDay() {
+        let calendar = utcCalendar()
+        let day = Date(timeIntervalSince1970: 1_800_000_000)
+        let lateNight = day.addingTimeInterval(15.5 * 3600)
+        let afterMidnight = day.addingTimeInterval(17 * 3600)
+        let nextMorning = day.addingTimeInterval(24 * 3600)
+        let task = TaskItem(title: "宿題", emoji: "📚", points: 1, dailyLimit: 2)
+        let request = CompletionRequest(
+            taskID: task.id,
+            taskTitle: task.title,
+            taskEmoji: task.emoji,
+            points: task.points,
+            requestedAt: lateNight,
+            status: .approved
+        )
+
+        // 深夜0時をまたいでも、朝4時までは同じ1日として数える
+        #expect(
+            PointService.remainingCount(
+                for: task,
+                requests: [request],
+                on: afterMidnight,
+                calendar: calendar
+            ) == 1
+        )
+        #expect(
+            PointService.remainingCount(
+                for: task,
+                requests: [request],
+                on: nextMorning,
+                calendar: calendar
+            ) == 2
+        )
+    }
+
+    @Test
     func approvalAddsPointsAndHistory() throws {
         let container = try makeContainer()
         let context = container.mainContext
