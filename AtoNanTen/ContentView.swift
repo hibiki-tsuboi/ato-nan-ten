@@ -16,10 +16,14 @@ struct ContentView: View {
     @AppStorage("hasSeenParentModeHint") private var hasSeenParentModeHint = false
     @AppStorage("isResettingData") private var isResettingData = false
     @AppStorage(AppSettings.Key.colorScheme) private var colorSchemeOption = AppColorSchemeOption.system
+    @State private var restoreController = BackupRestoreController()
 
     var body: some View {
         Group {
-            if isResettingData {
+            if restoreController.pendingArchive != nil {
+                ProgressView("データをインポートしています…")
+                    .task { await restoreController.restore(in: modelContext) }
+            } else if isResettingData {
                 ProgressView("リセットしています…")
                     .task { performReset() }
             } else if children.isEmpty && goals.isEmpty {
@@ -31,9 +35,18 @@ struct ContentView: View {
                 FamilyHomeView()
             }
         }
+        .environment(restoreController)
         .onAppear { AppearanceController.apply(colorSchemeOption) }
         .onChange(of: colorSchemeOption) { _, option in
             AppearanceController.apply(option)
+        }
+        .alert(restoreController.didRestore ? "引き継ぎが完了しました" : "引き継ぎできませんでした", isPresented: Binding(
+            get: { restoreController.resultMessage != nil && restoreController.pendingArchive == nil },
+            set: { if !$0 { restoreController.resultMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(restoreController.resultMessage ?? "")
         }
     }
 

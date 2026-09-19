@@ -11,6 +11,8 @@ import SwiftUI
 ///
 ///     xcrun simctl launch <device> jp.hibiki.gohobiplus -demoScene home
 enum DemoScene: String, CaseIterable {
+    /// 初回設定（空のメモリ内データ）
+    case setup
     /// 子ども画面
     case home
     /// きょうだいの切り替えつきの子ども画面
@@ -27,6 +29,8 @@ enum DemoScene: String, CaseIterable {
     case tasks
     /// 履歴
     case history
+    /// データの引き継ぎ
+    case backup
 }
 
 /// 起動引数を読んで、デモ用のコンテナを一度だけ組み立てる。
@@ -49,10 +53,30 @@ struct DemoScreenshotMode {
 
 /// デモモードのときだけ差し込む画面。通常起動では素通しで `ContentView` を出す。
 struct DemoScreenshotRoot: View {
+    @State private var restoreController = BackupRestoreController()
+
     var body: some View {
         if let mode = DemoScreenshotMode.current {
-            DemoSceneView(scene: mode.scene)
-                .modelContainer(mode.container)
+            Group {
+                if restoreController.pendingArchive != nil {
+                    ProgressView("データをインポートしています…")
+                        .task { await restoreController.restore(in: mode.container.mainContext) }
+                } else if restoreController.didRestore {
+                    ContentView()
+                } else {
+                    DemoSceneView(scene: mode.scene)
+                }
+            }
+            .environment(restoreController)
+            .modelContainer(mode.container)
+            .alert("データの引き継ぎ", isPresented: Binding(
+                get: { restoreController.resultMessage != nil && restoreController.pendingArchive == nil },
+                set: { if !$0 { restoreController.resultMessage = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(restoreController.resultMessage ?? "")
+            }
         } else {
             ContentView()
         }
@@ -75,8 +99,13 @@ private struct DemoSceneView: View {
 
     var body: some View {
         switch scene {
-        case .home, .siblings, .achievement, .timer:
+        case .setup, .home, .siblings, .achievement, .timer:
             ContentView()
+        case .backup:
+            NavigationStack {
+                BackupTransferView()
+            }
+            .tint(AppTheme.purple)
         case .parent, .approval, .tasks, .history:
             if let child, let goal {
                 parentScene(child: child, goal: goal)
@@ -127,7 +156,9 @@ enum DemoData {
             fatalError("デモ用のデータを準備できませんでした: \(error)")
         }
 
-        seed(scene, into: container.mainContext)
+        if scene != .setup {
+            seed(scene, into: container.mainContext)
+        }
         return container
     }
 
@@ -249,7 +280,9 @@ enum DemoData {
         now: Date
     ) {
         switch scene {
-        case .home, .siblings, .parent, .tasks, .history:
+        case .setup:
+            break
+        case .home, .siblings, .parent, .tasks, .history, .backup:
             approve(tasks["はみがき"], at: time(7, 30, today: today), goal: goal, context: context)
             approve(tasks["どくしょ"], at: time(8, 20, today: today), goal: goal, context: context)
             approve(tasks["かたづけ"], at: time(9, 5, today: today), goal: goal, context: context)

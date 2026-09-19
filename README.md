@@ -50,7 +50,18 @@
 - ポイントの手動修正（履歴に記録）
 - 子どもの管理（複数人。名前とアイコン）
 - 履歴（ポイントと達成の記録）
-- アプリの設定（見た目、音、承認、通知、データ削除）
+- アプリの設定（見た目、音、承認、通知、データの引き継ぎ、データ削除）
+
+### 機種変更・バックアップ
+
+1. 古いiPhoneの親モード →「アプリの設定」→「データの引き継ぎ」→「データをエクスポート」で、JSONファイルを「ファイル」に保存する。
+2. iCloud Drive、または「ファイル」アプリの共有からAirDropなどを使って、新しいiPhoneへファイルを渡す。
+3. 新しいiPhoneの初回設定画面で「機種変更：バックアップから引き継ぐ」を選ぶ。設定済みの場合は、親モードの「データの引き継ぎ」を開く。
+4. 「データをインポート」でファイルを選び、保存日時・件数を確認して復元する。
+
+全員分のプロフィール・ごほうび・ポイント・行動・承認待ち・履歴・達成記録・タイマー終了時刻・アプリ設定を移せる。インポート先のデータはすべて置き換わるため、残したい記録は事前にエクスポートする。2台間の自動同期は行わない。古い日のバックアップでは、通常どおり朝4時基準の日次リセットが適用される。
+
+認証は移行先のFace ID・端末パスコードを使用する。アプリ内パスコードは書き出さず、移行先で未登録なら必要時に設定する。通知の許可も端末ごとに必要。バックアップは暗号化されておらず、子どもの名前と履歴を含むため安全な場所で保管する。新しいiPhoneで内容を確認してから古いiPhoneのデータを削除する。
 
 ### 1日の扱い
 
@@ -71,7 +82,7 @@
 ## 動作環境
 
 - iOS 26 以降（iPhone）
-- Xcode（iOS 26 SDK）
+- Xcode 27（iOS 27 SDK、最低対応OSはiOS 26）
 - 外部ライブラリなし。サーバー通信なし（すべて端末内で完結）
 
 ## セットアップ
@@ -92,10 +103,13 @@ xcodebuild -project AtoNanTen.xcodeproj -scheme AtoNanTen -configuration Debug \
 ### テスト
 
 ユニットテストは Swift Testing（`@Test` / `#expect`）で書かれており、`AtoNanTenTests/PointServiceTests.swift` がポイント加算・承認・日次リセット・曜日・連続達成のロジックを検証する。
+`AtoNanTenTests/BackupServiceTests.swift` は全データの往復、既存データの置換、不正ファイルの拒否、保存失敗時の保護を検証する。
+`AtoNanTenUITests/CompatibilityUITests.swift` は初回設定・承認・タイマー・引き継ぎ画面を実際に操作する。共有スキームのCommand-Uで両方のテストを実行できる。
 
 ```bash
 xcodebuild test -project AtoNanTen.xcodeproj -scheme AtoNanTen \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' CODE_SIGNING_ALLOWED=NO
+  -destination 'platform=iOS Simulator,name=iPhone 18 Pro,OS=27.0' \
+  -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO
 ```
 
 ## 構成
@@ -136,6 +150,7 @@ AtoNanTen/
 
 - [reward-points-app-spec.md](reward-points-app-spec.md) — 仕様書（画面構成、データモデル、エッジケース、将来候補）
 - [AGENTS.md](AGENTS.md) — コーディング規約とコントリビュート時の指針
+- [docs/ios-compatibility.md](docs/ios-compatibility.md) — iOS 26 / 27のテスト手順と実機確認項目
 - [PRIVACY.md](PRIVACY.md) — プライバシーポリシー（公開ページ: https://hibiki-tsuboi.github.io/ato-nan-ten/privacy/ ）
 
 ## 未実装 / 将来候補

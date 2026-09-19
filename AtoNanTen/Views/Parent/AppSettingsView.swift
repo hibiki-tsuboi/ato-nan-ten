@@ -62,6 +62,14 @@ struct AppSettingsView: View {
                 Text("承認待ちの通知は、\(Int(NotificationService.pendingApprovalDelay / 60))分たっても承認されていない申請だけをお知らせします。")
             }
 
+            Section("機種変更・バックアップ") {
+                NavigationLink {
+                    BackupTransferView()
+                } label: {
+                    Label("データの引き継ぎ", systemImage: "iphone.and.arrow.forward")
+                }
+            }
+
             Section("アプリについて") {
                 LabeledContent("バージョン", value: appVersion)
             }

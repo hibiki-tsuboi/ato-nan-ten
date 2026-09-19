@@ -17,6 +17,7 @@ struct SetupFlowView: View {
     @State private var rewardEmoji = "🎮"
     @State private var targetPoints = 5
     @State private var presets = SetupTaskPreset.defaults
+    @State private var showsBackupImport = false
     @FocusState private var focusedField: SetupField?
     @ScaledMetric(relativeTo: .largeTitle) private var targetPointsSize: CGFloat = 52
 
@@ -53,6 +54,16 @@ struct SetupFlowView: View {
         .tint(AppTheme.orange)
         .onChange(of: step) {
             focusedField = nil
+        }
+        .sheet(isPresented: $showsBackupImport) {
+            NavigationStack {
+                BackupTransferView(allowsExport: false)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("閉じる") { showsBackupImport = false }
+                        }
+                    }
+            }
         }
     }
 
@@ -93,6 +104,14 @@ struct SetupFlowView: View {
 
                 if !isAddingSibling {
                     setupIntro
+                    Button {
+                        focusedField = nil
+                        showsBackupImport = true
+                    } label: {
+                        Label("機種変更：バックアップから引き継ぐ", systemImage: "square.and.arrow.down")
+                            .font(.subheadline.weight(.bold))
+                            .frame(minHeight: 44)
+                    }
                 }
 
                 VStack(alignment: .leading, spacing: 18) {
