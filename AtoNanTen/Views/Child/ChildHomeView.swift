@@ -108,7 +108,7 @@ struct ChildHomeView: View {
                             noTasksCard
                         } else {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("きょうも がんばろう！")
+                                Text("きょうも がんばろう！！")
                                     .font(.title3.weight(.heavy))
                                     .foregroundStyle(AppTheme.ink)
 
